@@ -17,6 +17,13 @@ const UserSchema = new mongoose.Schema({
 
     },
 
+    accountNumber:{
+        type:String,
+        default:"",
+        required:false,
+        unique:true,
+    },
+
     channel:{
         type:String,
         lowercase: true,

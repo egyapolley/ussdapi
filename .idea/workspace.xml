@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="83dc2d1c-b7e8-40d2-a3dc-448d497493eb" name="Default Changelist" comment="" />
+    <list default="true" id="83dc2d1c-b7e8-40d2-a3dc-448d497493eb" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/utils/main_utils.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/model/user.js" beforeDir="false" afterPath="$PROJECT_DIR$/model/user.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/validators.js" beforeDir="false" afterPath="$PROJECT_DIR$/utils/validators.js" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -14,7 +21,11 @@
       </list>
     </option>
   </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
   <component name="ProjectId" id="1khlPuKureiOt0R8FwAGTYNGZJw" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
@@ -23,7 +34,8 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="javascript.nodejs.core.library.configured.version" value="12.18.1" />
-    <property name="javascript.nodejs.core.library.typings.version" value="12.19.6" />
+    <property name="javascript.nodejs.core.library.typings.version" value="12.19.8" />
+    <property name="js.last.introduce.type" value="LET" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="nodejs_interpreter_path" value="node" />
     <property name="nodejs_package_manager_path" value="npm" />
@@ -52,33 +64,19 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1606160682751</updated>
-      <workItem from="1606160683808" duration="3016000" />
+      <workItem from="1606160683808" duration="3164000" />
+      <workItem from="1606604137202" duration="41000" />
+      <workItem from="1607084898889" duration="1481000" />
+      <workItem from="1607103205448" duration="27000" />
+      <workItem from="1607118661059" duration="17000" />
+      <workItem from="1607124602954" duration="664000" />
+      <workItem from="1607197091857" duration="454000" />
+      <workItem from="1611074415050" duration="5319000" />
+      <workItem from="1611127391554" duration="38900000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
-  </component>
-  <component name="WindowStateProjectService">
-    <state x="458" y="193" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog" timestamp="1606162702071">
-      <screen x="0" y="23" width="1440" height="833" />
-    </state>
-    <state x="458" y="193" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.23.1440.833@0.23.1440.833" timestamp="1606162702071" />
-    <state width="1419" height="216" key="GridCell.Tab.0.bottom" timestamp="1606163598917">
-      <screen x="0" y="23" width="1440" height="833" />
-    </state>
-    <state width="1419" height="216" key="GridCell.Tab.0.bottom/0.23.1440.833@0.23.1440.833" timestamp="1606163598917" />
-    <state width="1419" height="216" key="GridCell.Tab.0.center" timestamp="1606163598917">
-      <screen x="0" y="23" width="1440" height="833" />
-    </state>
-    <state width="1419" height="216" key="GridCell.Tab.0.center/0.23.1440.833@0.23.1440.833" timestamp="1606163598917" />
-    <state width="1419" height="216" key="GridCell.Tab.0.left" timestamp="1606163598916">
-      <screen x="0" y="23" width="1440" height="833" />
-    </state>
-    <state width="1419" height="216" key="GridCell.Tab.0.left/0.23.1440.833@0.23.1440.833" timestamp="1606163598916" />
-    <state width="1419" height="216" key="GridCell.Tab.0.right" timestamp="1606163598917">
-      <screen x="0" y="23" width="1440" height="833" />
-    </state>
-    <state width="1419" height="216" key="GridCell.Tab.0.right/0.23.1440.833@0.23.1440.833" timestamp="1606163598917" />
   </component>
 </project>
