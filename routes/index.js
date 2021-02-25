@@ -619,7 +619,7 @@ router.post("/bundles_ca", passport.authenticate('basic', {
    <soapenv:Header/>
    <soapenv:Body>
       <data:DATA_RechargesRequest>
-         <CC_Calling_Party_Id>233255000102</CC_Calling_Party_Id>
+         <CC_Calling_Party_Id>${subscriberNumber}</CC_Calling_Party_Id>
          <CHANNEL>${channel}</CHANNEL>
          <TRANSACTION_ID>${transactionId}</TRANSACTION_ID>
          <BundleName>${bundleId}</BundleName>
@@ -718,7 +718,7 @@ router.post("/bundles_ep", passport.authenticate('basic', {
          <CC_Calling_Party_Id>${accountId}</CC_Calling_Party_Id>
          <CHANNEL>${channel}</CHANNEL>
          <TRANSACTION_ID>${transactionId}</TRANSACTION_ID>
-         <Recipient_Number>233255000102</Recipient_Number>
+         <Recipient_Number>${subscriberNumber}</Recipient_Number>
          <BundleName>${bundleId}</BundleName>
          <SubscriptionType>One-Off</SubscriptionType>
       </dat:DATARechargeUSSDMoMoRequest>
