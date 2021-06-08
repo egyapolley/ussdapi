@@ -372,7 +372,7 @@ router.post("/voucher", passport.authenticate('basic', {
    <soapenv:Header/>
    <soapenv:Body>
       <vouc:VoucherRechargeRequest>
-         <CC_Calling_Party_Id>233255000102</CC_Calling_Party_Id>
+         <CC_Calling_Party_Id>${subscriberNumber}</CC_Calling_Party_Id>
          <CHANNEL>${channel}</CHANNEL>
          <TRANSACTION_ID>${transactionId}</TRANSACTION_ID>
          <WALLET_TYPE>Primary</WALLET_TYPE>

@@ -28,9 +28,10 @@
   </component>
   <component name="PropertiesComponent">
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="javascript.nodejs.core.library.configured.version" value="12.18.1" />
-    <property name="javascript.nodejs.core.library.typings.version" value="12.19.8" />
+    <property name="javascript.nodejs.core.library.configured.version" value="14.16.0" />
+    <property name="javascript.nodejs.core.library.typings.version" value="14.14.43" />
     <property name="js.last.introduce.type" value="LET" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="nodejs_interpreter_path" value="node" />
@@ -73,6 +74,10 @@
       <workItem from="1612776231638" duration="451000" />
       <workItem from="1613124656331" duration="727000" />
       <workItem from="1614248033615" duration="466000" />
+      <workItem from="1619600733581" duration="2460000" />
+      <workItem from="1619636738029" duration="15000" />
+      <workItem from="1621438057773" duration="663000" />
+      <workItem from="1623147337099" duration="1050000" />
     </task>
     <task id="LOCAL-00001" summary="New api for Co-Chat">
       <created>1611274361437</created>
