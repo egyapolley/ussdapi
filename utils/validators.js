@@ -144,6 +144,24 @@ module.exports = {
         return schema.validate(body)
 
     },
+    validateBalanceQueryEp:(body) => {
+
+        const schema = Joi.object({
+            channel: Joi.string()
+                .alphanum()
+                .min(3)
+                .max(50)
+                .required(),
+
+            accountId: Joi.string()
+                .alphanum()
+                .required(),
+        });
+
+        return schema.validate(body)
+
+
+    },
 
 
 

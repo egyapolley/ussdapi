@@ -786,6 +786,115 @@ router.post("/bundles_ep", passport.authenticate('basic', {
 
 })
 
+router.get("/balance_ep", passport.authenticate('basic', {
+    session: false
+}), async (req, res) => {
+    let {accountId,channel} = req.query;
+    const {error} = validator.validateBalanceQueryEp({accountId,channel});
+    if (error) {
+        return res.json({
+            status: 2,
+            reason: error.message
+        })
+    }
+    if (channel.toLowerCase() !== req.user.channel) {
+        return res.json({
+            status: 2,
+            reason: `Invalid Request channel ${channel}`
+        })
+    }
+
+    if (accountId !== req.user.accountNumber) {
+        return res.json({
+            status: 2,
+            reason: `Invalid Request accountId ${accountId}`
+        })
+
+    }
+
+
+
+    const url = "http://172.25.39.13:3003";
+    const sampleHeaders = {
+        'User-Agent': 'NodeApp',
+        'Content-Type': 'text/xml;charset=UTF-8',
+        'SOAPAction': 'urn:CCSCD1_QRY',
+    };
+
+    let xmlRequest = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:pi="http://xmlns.oracle.com/communications/ncc/2009/05/15/pi">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <pi:CCSCD1_QRY>
+         <pi:username>admin</pi:username>
+         <pi:password>admin</pi:password>
+         <pi:MSISDN>${accountId}</pi:MSISDN>
+         <pi:LIST_TYPE>BALANCE</pi:LIST_TYPE>
+         <pi:WALLET_TYPE>Primary</pi:WALLET_TYPE>
+         <pi:BALANCE_TYPE>General Cash</pi:BALANCE_TYPE>
+      </pi:CCSCD1_QRY>
+   </soapenv:Body>
+</soapenv:Envelope>`;
+
+    try {
+        const {response} = await soapRequest({url: url, headers: sampleHeaders, xml: xmlRequest, timeout: 5000}); // Optional timeout parameter(milliseconds)
+
+        const {body} = response;
+        let balance =null;
+
+        if (parser.validate(body) === true) { //optional (it'll return an object in case it's not valid)
+            let jsonObj = parser.parse(body, options);
+            if (jsonObj.Envelope.Body.CCSCD1_QRYResponse && jsonObj.Envelope.Body.CCSCD1_QRYResponse.BALANCE ) {
+                balance = jsonObj.Envelope.Body.CCSCD1_QRYResponse.BALANCE.toString();
+                if (balance){
+                    balance = parseFloat((parseFloat(balance)/100).toFixed(2));
+                    return res.json(
+                        {
+                            status: 0,
+                            reason: "success",
+                            balance:balance.toLocaleString()
+                        })
+                }
+
+
+
+
+
+
+            } else {
+                let soapFault = jsonObj.Envelope.Body.Fault;
+                let faultString = soapFault.faultstring;
+                console.log(soapFault);
+                return res.json(
+                    {
+                        status: 1,
+                        reason: faultString,
+                    })
+
+
+            }
+
+        }
+
+
+
+
+
+
+
+    } catch (error) {
+        console.log(error)
+        res.json(
+            {
+                status: 1,
+                reason: "System Failure",
+            })
+
+
+    }
+
+
+});
+
 router.post("/user", async (req, res) => {
     try {
         let {username, password, channel, accountNumber} = req.body;

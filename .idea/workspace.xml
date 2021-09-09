@@ -3,7 +3,9 @@
   <component name="ChangeListManager">
     <list default="true" id="83dc2d1c-b7e8-40d2-a3dc-448d497493eb" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/routes/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/validators.js" beforeDir="false" afterPath="$PROJECT_DIR$/utils/validators.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -30,8 +32,9 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="javascript.nodejs.core.library.configured.version" value="14.16.0" />
-    <property name="javascript.nodejs.core.library.typings.version" value="14.14.43" />
+    <property name="dart.analysis.tool.window.visible" value="false" />
+    <property name="javascript.nodejs.core.library.configured.version" value="12.18.1" />
+    <property name="javascript.nodejs.core.library.typings.version" value="12.20.24" />
     <property name="js.last.introduce.type" value="LET" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="nodejs_interpreter_path" value="node" />
@@ -78,6 +81,11 @@
       <workItem from="1619636738029" duration="15000" />
       <workItem from="1621438057773" duration="663000" />
       <workItem from="1623147337099" duration="1050000" />
+      <workItem from="1629984380903" duration="446000" />
+      <workItem from="1629985035910" duration="269000" />
+      <workItem from="1630354700830" duration="142000" />
+      <workItem from="1630628807296" duration="61000" />
+      <workItem from="1631224570413" duration="1106000" />
     </task>
     <task id="LOCAL-00001" summary="New api for Co-Chat">
       <created>1611274361437</created>
