@@ -163,6 +163,79 @@ module.exports = {
 
     },
 
+    validateExtraTime: (body) =>{
+        const schema = Joi.object({
+            subscriberNumber: Joi.string()
+                .length(12)
+                .alphanum()
+                .regex(/^233.+/)
+                .required()
+                .messages({"string.pattern.base": "subscriberNumber must start with 233"}),
+
+            channel: Joi.string()
+                .alphanum()
+                .min(3)
+                .max(50)
+                .required(),
+            code: Joi.number()
+                .required(),
+
+        });
+
+        return schema.validate(body)
+
+    },
+    validateGift: (body) =>{
+        const schema = Joi.object({
+
+            donorNumber: Joi.string()
+                .length(12)
+                .alphanum()
+                .regex(/^233.+/)
+                .required()
+                .messages({"string.pattern.base": "subscriberNumber must start with 233"}),
+            recipientNumber: Joi.string()
+                .length(12)
+                .alphanum()
+                .regex(/^233.+/)
+                .required()
+                .messages({"string.pattern.base": "subscriberNumber must start with 233"}),
+            transactionId: Joi.string()
+                .required(),
+            channel: Joi.string()
+                .alphanum()
+                .min(3)
+                .max(50)
+                .required(),
+            amount: Joi.number()
+                .min(1000)
+                .max(100000)
+                .required(),
+
+        });
+
+        return schema.validate(body)
+
+    },
+    validateGetNumber: (body) =>{
+        const schema = Joi.object({
+            channel: Joi.string()
+                .alphanum()
+                .min(3)
+                .max(50)
+                .required(),
+            iccId: Joi.string()
+                .regex(/[\d+]{18,19}/)
+                .label("Sim serial number or ICCID")
+                .required()
+                // .message("IccId is invalid format. Please check the back of sim card for the serial number")
+
+        });
+
+        return schema.validate(body)
+
+    },
+
 
 
 

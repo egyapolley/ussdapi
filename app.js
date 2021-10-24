@@ -2,9 +2,10 @@ const express = require("express");
 const router = require("./routes/index");
 const mongoose = require("mongoose");
 const helmet = require("helmet");
+const  path = require("path")
 
 
-require("dotenv").config();
+require("dotenv").config({path:path.join(__dirname,'custom.env')});
 
 mongoose.connect("mongodb://localhost/ussd", {
     useNewUrlParser: true,

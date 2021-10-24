@@ -5,7 +5,7 @@ const validator = require("../utils/validators");
 const passport = require("passport");
 const utils = require("../utils/main_utils")
 const BasicStrategy = require("passport-http").BasicStrategy;
-const moment = require("moment");
+const axios = require("axios")
 
 
 const soapRequest = require("easy-soap-request");
@@ -88,8 +88,8 @@ router.get("/account", passport.authenticate('basic', {
    <soapenv:Header/>
    <soapenv:Body>
       <pi:CCSCD1_QRY>
-         <pi:username>admin</pi:username>
-         <pi:password>admin</pi:password>
+         <pi:username>${process.env.PI_USER}</pi:username>
+         <pi:password>${process.env.PI_PASS}</pi:password>
          <pi:MSISDN>${subscriberNumber}</pi:MSISDN>
          <pi:LIST_TYPE>BALANCE</pi:LIST_TYPE>
          <pi:WALLET_TYPE>Primary</pi:WALLET_TYPE>
@@ -106,7 +106,6 @@ router.get("/account", passport.authenticate('basic', {
 
 
 
-        if (parser.validate(body) === true) {
             let jsonObj = parser.parse(body, options);
 
 
@@ -116,19 +115,19 @@ router.get("/account", passport.authenticate('basic', {
 
             } else {
                 let accountType = soapResponseBody['CCSCD1_QRYResponse']['PRODUCT']
-                let accountState =soapResponseBody['CCSCD1_QRYResponse']['STATUS']
+                let accountState = soapResponseBody['CCSCD1_QRYResponse']['STATUS']
                 let balanceResult = soapResponseBody['CCSCD1_QRYResponse']['BALANCES']['BALANCE_ITEM'];
 
-                switch (accountState){
+                switch (accountState) {
                     case 'A':
                     case 'D':
-                        accountState='ACTIVE'
+                        accountState = 'ACTIVE'
                         break;
                     case 'F':
                     case 'T':
                     case 'P':
                     case 'S':
-                        accountState='INACTIVE';
+                        accountState = 'INACTIVE';
                         break
                 }
 
@@ -200,99 +199,97 @@ router.get("/account", passport.authenticate('basic', {
 
                     });
 
-                    all_balances = all_balances.filter(item => data_balanceTypes.includes(item.balance_type) || unlimited_balanceTypes.includes(item.balance_type) || item.balance_type === 'Bundle ExpiryTrack Status' || item.balance_type.endsWith('Surfplus Data')||item.balance_type.endsWith('Cash'))
+                    all_balances = all_balances.filter(item => data_balanceTypes.includes(item.balance_type) || unlimited_balanceTypes.includes(item.balance_type) || item.balance_type === 'Bundle ExpiryTrack Status' || item.balance_type.endsWith('Surfplus Data') || item.balance_type.endsWith('Cash'))
                     const bundleExpiryTrack = all_balances.find(item => item.balance_type === 'Bundle ExpiryTrack Status')
-                    const mainDataExpiry = bundleExpiryTrack?utils.formatDate(bundleExpiryTrack.expiry_date):null
+                    const mainDataExpiry = bundleExpiryTrack ? utils.formatDate(bundleExpiryTrack.expiry_date) : null
 
-                    let mainDataValue =0;
-                    let cashBalanceValue=0;
+                    let mainDataValue = 0;
+                    let cashBalanceValue = 0;
                     all_balances.forEach(item => {
                         const balanceType = item.balance_type.toString();
-                        const balanceValue = item.value?item.value:0;
-                        const expiry_date= item.expiry_date?utils.formatDate(item.expiry_date):null
-                        if (balanceType.endsWith('Surfplus Data')){
-                            mainDataValue+=item.value
+                        const balanceValue = item.value ? item.value : 0;
+                        const expiry_date = item.expiry_date ? utils.formatDate(item.expiry_date) : null
+                        if (balanceType.endsWith('Surfplus Data')) {
+                            mainDataValue += item.value
 
-                        }else if(balanceType ==='General Cash' && balanceValue > 0){
+                        } else if (balanceType === 'General Cash' && balanceValue > 0) {
                             cashBalanceValue += balanceValue
 
 
-                        }
-
-                        else if (balanceType === 'UL_AlwaysON_Lite Status' && balanceValue > 0 ){
+                        } else if (balanceType === 'UL_AlwaysON_Lite Status' && balanceValue > 0) {
                             unlimitedBalances.push({
-                                balance_type:'AlwaysON Lite Package',
-                                value:'ACTIVE',
+                                balance_type: 'AlwaysON Lite Package',
+                                value: 'ACTIVE',
                                 expiry_date
                             })
 
-                        }else if (balanceType === 'UL_AlwaysON_Standard Status' && balanceValue > 0){
+                        } else if (balanceType === 'UL_AlwaysON_Standard Status' && balanceValue > 0) {
                             unlimitedBalances.push({
-                                balance_type:'AlwaysON Standard Package',
-                                value:'ACTIVE',
+                                balance_type: 'AlwaysON Standard Package',
+                                value: 'ACTIVE',
                                 expiry_date
                             })
 
-                        }else if (balanceType === 'UL_AlwaysON_Starter Status' && balanceValue > 0){
+                        } else if (balanceType === 'UL_AlwaysON_Starter Status' && balanceValue > 0) {
                             unlimitedBalances.push({
-                                balance_type:'AlwaysON Starter Package',
-                                value:'ACTIVE',
+                                balance_type: 'AlwaysON Starter Package',
+                                value: 'ACTIVE',
                                 expiry_date
                             })
 
-                        }else if (balanceType === 'UL_AlwaysON_Streamer Status' && balanceValue > 0){
+                        } else if (balanceType === 'UL_AlwaysON_Streamer Status' && balanceValue > 0) {
                             unlimitedBalances.push({
-                                balance_type:'AlwaysON Streamer Package',
-                                value:'ACTIVE',
+                                balance_type: 'AlwaysON Streamer Package',
+                                value: 'ACTIVE',
                                 expiry_date
                             })
 
-                        }else if (balanceType === 'UL_AlwaysON_Super Status' && balanceValue > 0){
+                        } else if (balanceType === 'UL_AlwaysON_Super Status' && balanceValue > 0) {
                             unlimitedBalances.push({
-                                balance_type:'AlwaysON Super Package',
-                                value:'ACTIVE',
+                                balance_type: 'AlwaysON Super Package',
+                                value: 'ACTIVE',
                                 expiry_date
                             })
 
-                        }else if (balanceType === 'UL_AlwaysON_Ultra Status' && balanceValue > 0){
+                        } else if (balanceType === 'UL_AlwaysON_Ultra Status' && balanceValue > 0) {
                             unlimitedBalances.push({
-                                balance_type:'AlwaysON Ultra Package',
-                                value:'ACTIVE',
+                                balance_type: 'AlwaysON Ultra Package',
+                                value: 'ACTIVE',
                                 expiry_date
                             })
 
-                        }else if (balanceType === 'UL_AlwaysON_Maxi Status' && balanceValue > 0){
+                        } else if (balanceType === 'UL_AlwaysON_Maxi Status' && balanceValue > 0) {
                             unlimitedBalances.push({
-                                balance_type:'AlwaysON Maxi Package',
-                                value:'ACTIVE',
+                                balance_type: 'AlwaysON Maxi Package',
+                                value: 'ACTIVE',
                                 expiry_date
                             })
 
-                        }else if (balanceType === 'ULNitePlan Status' && balanceValue > 0){
+                        } else if (balanceType === 'ULNitePlan Status' && balanceValue > 0) {
                             unlimitedBalances.push({
-                                balance_type:'Unlimited Night Package',
-                                value:'ACTIVE',
+                                balance_type: 'Unlimited Night Package',
+                                value: 'ACTIVE',
                                 expiry_date
                             })
 
-                        }else if (balanceType === 'ULDayNitePlan Status' && balanceValue > 0){
+                        } else if (balanceType === 'ULDayNitePlan Status' && balanceValue > 0) {
                             unlimitedBalances.push({
-                                balance_type:'Unlimited Package',
-                                value:'ACTIVE',
+                                balance_type: 'Unlimited Package',
+                                value: 'ACTIVE',
                                 expiry_date
                             })
 
-                        }else if (balanceType === 'ULBusiness2 Status' && balanceValue > 0){
+                        } else if (balanceType === 'ULBusiness2 Status' && balanceValue > 0) {
                             unlimitedBalances.push({
-                                balance_type:'Unlimited Business Package',
-                                value:'ACTIVE',
+                                balance_type: 'Unlimited Business Package',
+                                value: 'ACTIVE',
                                 expiry_date
                             })
 
-                        }else if (balanceType.match(/^Staff.*Count/) && balanceValue >0){
+                        } else if (balanceType.match(/^Staff.*Count/) && balanceValue > 0) {
                             unlimitedBalances.push({
-                                balance_type:'Staff Package',
-                                value:'ACTIVE',
+                                balance_type: 'Staff Package',
+                                value: 'ACTIVE',
                                 expiry_date
                             })
 
@@ -302,8 +299,8 @@ router.get("/account", passport.authenticate('basic', {
                     let promo_balances = all_balances.filter(item => data_balanceTypes.includes(item.balance_type))
                     promo_balances = promo_balances.map(item => {
 
-                        item.value =item.value?parseFloat(item.value/1024).toFixed(3):0;
-                        item.expiry_date=item.expiry_date?utils.formatDate(item.expiry_date):null;
+                        item.value = item.value ? parseFloat(item.value / 1024).toFixed(3) : 0;
+                        item.expiry_date = item.expiry_date ? utils.formatDate(item.expiry_date) : null;
                         return item;
 
                     })
@@ -315,17 +312,24 @@ router.get("/account", passport.authenticate('basic', {
                         accountState,
                         accountType,
 
-                        account_balance:  {
-                            cash_balance:[{balance_type:'Cash',value:parseFloat(cashBalanceValue/100).toFixed(2),expiry_date:null}],
-                            data_balance:[{balance_type:"Data",value:parseFloat(mainDataValue/1024).toFixed(3),expiry_date:mainDataExpiry}, ...promo_balances],
-                            unlimited_balance:unlimitedBalances
+                        account_balance: {
+                            cash_balance: [{
+                                balance_type: 'Cash',
+                                value: parseFloat(cashBalanceValue / 100).toFixed(2),
+                                expiry_date: null
+                            }],
+                            data_balance: [{
+                                balance_type: "Data",
+                                value: parseFloat(mainDataValue / 1024).toFixed(3),
+                                expiry_date: mainDataExpiry
+                            }, ...promo_balances],
+                            unlimited_balance: unlimitedBalances
                         }
                     })
 
 
                 }
             }
-        }
 
     } catch (error) {
         console.log(error)
@@ -349,7 +353,7 @@ router.post("/voucher", passport.authenticate('basic', {
             reason: error.message
         })
     }
-    const {subscriberNumber, channel,transactionId, voucherCode} = req.body;
+    const {subscriberNumber, channel, transactionId, voucherCode} = req.body;
     if (channel.toLowerCase() !== req.user.channel) {
         return res.json({
             status: 2,
@@ -359,13 +363,12 @@ router.post("/voucher", passport.authenticate('basic', {
     }
 
 
-
     const url = "http://172.25.39.16:2222";
     const sampleHeaders = {
         'User-Agent': 'NodeApp',
         'Content-Type': 'text/xml;charset=UTF-8',
         'SOAPAction': 'http://SCLINSMSVM01P/wsdls/Surfline/VoucherRecharge_USSD/VoucherRecharge_USSD',
-        'Authorization': 'Basic YWlhb3NkMDE6YWlhb3NkMDE='
+        'Authorization': `${process.env.OSD_AUTH}`
     };
 
     let xmlvoucher = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:vouc="http://SCLINSMSVM01P/wsdls/Surfline/VoucherRecharge.wsdl">
@@ -391,10 +394,9 @@ router.post("/voucher", passport.authenticate('basic', {
         if (!jsonObj.Envelope.Body.VoucherRechargeResult) {
 
             res.json({
-                status:0,
-                reason:"success"
+                status: 0,
+                reason: "success"
             })
-
 
 
         }
@@ -423,7 +425,7 @@ router.post("/voucher", passport.authenticate('basic', {
         }
 
 
-        res.json({status: 1, reason:faultMessage});
+        res.json({status: 1, reason: faultMessage});
 
     }
 
@@ -455,7 +457,7 @@ router.get("/bundles", passport.authenticate('basic', {
         'User-Agent': 'NodeApp',
         'Content-Type': 'text/xml;charset=UTF-8',
         'SOAPAction': 'http://SCLINSMSVM01P/wsdls/Surfline/VoucherRecharge_USSD/VoucherRecharge_USSD',
-        'Authorization': 'Basic YWlhb3NkMDE6YWlhb3NkMDE='
+        'Authorization': `${process.env.OSD_AUTH}`
     };
 
     let xmlRequest = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:pac="http://SCLINSMSVM01P/wsdls/Surfline/Package_Query_USSD.wsdl">
@@ -595,7 +597,7 @@ router.post("/bundles_ca", passport.authenticate('basic', {
             reason: error.message
         })
     }
-    const {subscriberNumber, channel,transactionId, bundleId,subscriptionType} = req.body;
+    const {subscriberNumber, channel, transactionId, bundleId, subscriptionType} = req.body;
     if (channel.toLowerCase() !== req.user.channel) {
         return res.json({
             status: 2,
@@ -611,7 +613,7 @@ router.post("/bundles_ca", passport.authenticate('basic', {
         'User-Agent': 'NodeApp',
         'Content-Type': 'text/xml;charset=UTF-8',
         'SOAPAction': 'http://SCLINSMSVM01P/wsdls/Surfline/DATA_Recharges/DATA_Recharges',
-        'Authorization': 'Basic YWlhb3NkMDE6YWlhb3NkMDE='
+        'Authorization': `${process.env.OSD_AUTH}`
     };
 
 
@@ -634,7 +636,7 @@ router.post("/bundles_ca", passport.authenticate('basic', {
         const {body} = response;
         let jsonObj = parser.parse(body, options);
         if (!jsonObj.Envelope.Body.DATA_RechargesResult) {
-            res.json({status: 0, reason:"success"});
+            res.json({status: 0, reason: "success"});
 
 
         }
@@ -668,7 +670,7 @@ router.post("/bundles_ca", passport.authenticate('basic', {
                 break;
         }
 
-        res.json({status:1, reason:faultMessage});
+        res.json({status: 1, reason: faultMessage});
 
 
     }
@@ -708,7 +710,7 @@ router.post("/bundles_ep", passport.authenticate('basic', {
         'User-Agent': 'NodeApp',
         'Content-Type': 'text/xml;charset=UTF-8',
         'SOAPAction': 'http://SCLINSMSVM01P/wsdls/Surfline/VoucherRecharge_USSD/VoucherRecharge_USSD',
-        'Authorization': 'Basic YWlhb3NkMDE6YWlhb3NkMDE='
+        'Authorization': `${process.env.OSD_AUTH}`
     };
 
     let xmlRequest = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:dat="http://SCLINSMSVM01P/wsdls/Surfline/DATARechargeUSSDMobileMoney.wsdl">
@@ -786,11 +788,196 @@ router.post("/bundles_ep", passport.authenticate('basic', {
 
 })
 
+router.post("/redeem_extra", passport.authenticate('basic', {
+    session: false
+}), async (req, res) => {
+
+    const {error} = validator.validateExtraTime(req.body);
+    if (error) {
+        return res.json({
+            status: 2,
+            reason: error.message
+        })
+    }
+    const {subscriberNumber, channel, code} = req.body;
+    if (channel.toLowerCase() !== req.user.channel) {
+        return res.json({
+            status: 2,
+            reason: `Invalid Request channel ${channel}`
+        })
+    }
+
+
+    const url = "http://172.25.39.16:2222";
+    const sampleHeaders = {
+        'User-Agent': 'NodeApp',
+        'Content-Type': 'text/xml;charset=UTF-8',
+        'SOAPAction': 'http://SCLINSMSVM01P/wsdls/Surfline/VoucherRecharge_USSD/VoucherRecharge_USSD',
+        'Authorization': `${process.env.OSD_AUTH}`
+    };
+
+    let xmlRequest = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ext="http://SCLINSMSVM01P/wsdls/Surfline/ExtraTimeDataRedemption.wsdl">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <ext:ExtraTimeRedemptionRequest>
+         <CC_Calling_Party_Id>${subscriberNumber}</CC_Calling_Party_Id>
+         <CHANNEL>${channel}</CHANNEL>
+         <PIN>${code}</PIN>
+      </ext:ExtraTimeRedemptionRequest>
+   </soapenv:Body>
+</soapenv:Envelope>`;
+    try {
+        const {response} = await soapRequest({url: url, headers: sampleHeaders, xml: xmlRequest, timeout: 5000}); // Optional timeout parameter(milliseconds)
+
+        const {body} = response;
+
+        let jsonObj = parser.parse(body, options);
+        let result = jsonObj.Envelope.Body;
+        if (result.ExtraTimeRedemptionResult && result.ExtraTimeRedemptionResult.ServiceRequestID) {
+            let serviceRequestID = result.ExtraTimeRedemptionResult.ServiceRequestID;
+            res.json({status: 0, reason: "success", serviceRequestId: serviceRequestID})
+
+        }
+
+
+    } catch (err) {
+        let errorBody = err.toString();
+        if (parser.validate(errorBody) === true) {
+            let jsonObj = parser.parse(errorBody, options);
+            if (jsonObj.Envelope.Body.Fault) {
+                let soapFault = jsonObj.Envelope.Body.Fault;
+                let faultString = soapFault.faultstring;
+                console.log(faultString);
+                let errorcode = soapFault.detail.ExtraTimeRedemptionFault.errorCode;
+                console.log(errorcode)
+                switch (errorcode) {
+                    case 31:
+                        faultString = `Subscriber number ${subscriberNumber} is not active `;
+                        break;
+                    case 32:
+                        faultString = `Code ${code} is not valid`;
+                        break;
+
+                    default:
+                        faultString = "System Error";
+
+                }
+                return res.json({status: 1, reason: faultString, serviceRequestId: null})
+
+            }
+
+
+        }
+
+        console.log(errorBody)
+        res.json({error: "System Failure"})
+
+    }
+
+})
+
+router.post("/gift", passport.authenticate('basic', {
+    session: false
+}), async (req, res) => {
+
+    const {error} = validator.validateGift(req.body);
+    if (error) {
+        return res.json({
+            status: 2,
+            reason: error.message
+        })
+    }
+    const {donorNumber, recipientNumber, channel, amount, transactionId} = req.body;
+    if (channel.toLowerCase() !== req.user.channel) {
+        return res.json({
+            status: 2,
+            reason: `Invalid Request channel ${channel}`
+        })
+    }
+
+    if (amount % 100 !== 0) return res.json({status: 1, reason: "Amount should be multiples of 100MB"})
+
+    const url = "http://172.25.39.16:2222";
+    const sampleHeaders = {
+        'User-Agent': 'NodeApp',
+        'Content-Type': 'text/xml;charset=UTF-8',
+        'SOAPAction': 'http://SCLINSMSVM01P/wsdls/Surfline/VoucherRecharge_USSD/VoucherRecharge_USSD',
+        'Authorization': `${process.env.OSD_AUTH}`
+    };
+
+    let xmlRequest = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:gif="http://SCLINSMSVM01P/wsdls/Surfline/Gifting.wsdl">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <gif:GiftingRequest>
+         <CC_Calling_Party_Id>${donorNumber}</CC_Calling_Party_Id>
+         <CHANNEL>${channel}</CHANNEL>
+         <TRANSACTION_ID>${transactionId}</TRANSACTION_ID>
+         <Recipient_Number>${recipientNumber}</Recipient_Number>
+         <AMOUNT>${amount}</AMOUNT>
+      </gif:GiftingRequest>
+   </soapenv:Body>
+</soapenv:Envelope>`;
+    try {
+        const {response} = await soapRequest({url: url, headers: sampleHeaders, xml: xmlRequest, timeout: 5000}); // Optional timeout parameter(milliseconds)
+
+        const {body} = response;
+
+        let jsonObj = parser.parse(body, options);
+        let result = jsonObj.Envelope.Body;
+        if (result.GiftingResult && result.GiftingResult.ServiceRequestID) {
+            let serviceRequestID = result.GiftingResult.ServiceRequestID;
+            res.json({status: 0, reason: "success", serviceRequestId: serviceRequestID})
+
+        }
+
+
+    } catch (err) {
+        let errorBody = err.toString();
+        if (parser.validate(errorBody) === true) {
+            let jsonObj = parser.parse(errorBody, options);
+            if (jsonObj.Envelope.Body.Fault) {
+                let soapFault = jsonObj.Envelope.Body.Fault;
+                let faultString = soapFault.faultstring;
+                console.log(faultString);
+                let errorcode = soapFault.detail.GiftingFault.errorCode;
+                console.log(errorcode)
+                switch (errorcode) {
+                    case 67:
+                        faultString = `${amount} is less than the minimum.Minimum value is 1000MB `;
+                        break;
+                    case 71:
+                        faultString = `Donor account ${donorNumber} is not eligible. You can transfer 15 days after top-up`;
+                        break;
+                    case 69:
+                        faultString = `Exceed maximum number of transfers in the month`;
+                        break;
+                    case 60:
+                        faultString = `Donor account ${donorNumber} is not active`;
+                        break;
+                    case 65:
+                        faultString = `Transfer is not allowed on same account`;
+                        break;
+                    default:
+                        faultString = "System Error";
+
+                }
+                return res.json({status: 1, reason: faultString, serviceRequestId: null})
+            }
+
+        }
+
+        console.log(errorBody)
+        res.json({error: "System Failure"})
+
+    }
+
+})
+
 router.get("/balance_ep", passport.authenticate('basic', {
     session: false
 }), async (req, res) => {
-    let {accountId,channel} = req.query;
-    const {error} = validator.validateBalanceQueryEp({accountId,channel});
+    let {accountId, channel} = req.query;
+    const {error} = validator.validateBalanceQueryEp({accountId, channel});
     if (error) {
         return res.json({
             status: 2,
@@ -813,7 +1000,6 @@ router.get("/balance_ep", passport.authenticate('basic', {
     }
 
 
-
     const url = "http://172.25.39.13:3003";
     const sampleHeaders = {
         'User-Agent': 'NodeApp',
@@ -825,8 +1011,8 @@ router.get("/balance_ep", passport.authenticate('basic', {
    <soapenv:Header/>
    <soapenv:Body>
       <pi:CCSCD1_QRY>
-         <pi:username>admin</pi:username>
-         <pi:password>admin</pi:password>
+         <pi:username>${process.env.PI_USER}</pi:username>
+         <pi:password>${process.env.PI_PASS}</pi:password>
          <pi:MSISDN>${accountId}</pi:MSISDN>
          <pi:LIST_TYPE>BALANCE</pi:LIST_TYPE>
          <pi:WALLET_TYPE>Primary</pi:WALLET_TYPE>
@@ -839,25 +1025,21 @@ router.get("/balance_ep", passport.authenticate('basic', {
         const {response} = await soapRequest({url: url, headers: sampleHeaders, xml: xmlRequest, timeout: 5000}); // Optional timeout parameter(milliseconds)
 
         const {body} = response;
-        let balance =null;
+        let balance = null;
 
         if (parser.validate(body) === true) { //optional (it'll return an object in case it's not valid)
             let jsonObj = parser.parse(body, options);
-            if (jsonObj.Envelope.Body.CCSCD1_QRYResponse && jsonObj.Envelope.Body.CCSCD1_QRYResponse.BALANCE ) {
+            if (jsonObj.Envelope.Body.CCSCD1_QRYResponse && jsonObj.Envelope.Body.CCSCD1_QRYResponse.BALANCE) {
                 balance = jsonObj.Envelope.Body.CCSCD1_QRYResponse.BALANCE.toString();
-                if (balance){
-                    balance = parseFloat((parseFloat(balance)/100).toFixed(2));
+                if (balance) {
+                    balance = parseFloat((parseFloat(balance) / 100).toFixed(2));
                     return res.json(
                         {
                             status: 0,
                             reason: "success",
-                            balance:balance.toLocaleString()
+                            balance: balance.toLocaleString()
                         })
                 }
-
-
-
-
 
 
             } else {
@@ -876,11 +1058,6 @@ router.get("/balance_ep", passport.authenticate('basic', {
         }
 
 
-
-
-
-
-
     } catch (error) {
         console.log(error)
         res.json(
@@ -890,6 +1067,51 @@ router.get("/balance_ep", passport.authenticate('basic', {
             })
 
 
+    }
+
+
+});
+
+router.get("/msisdn", passport.authenticate('basic', {
+    session: false
+}), async (req, res) => {
+    let {iccId, channel} = req.query;
+    const {error} = validator.validateGetNumber({iccId, channel});
+    if (error) {
+        console.log(JSON.stringify(error))
+        return res.json({
+            status: 2,
+            reason: error.message.includes("required pattern")?`${iccId} is invalid format.Please check back of sim card for correct serial id`:error.message
+        })
+    }
+    if (channel.toLowerCase() !== req.user.channel) {
+        return res.json({
+            status: 2,
+            reason: `Invalid Request channel ${channel}`
+        })
+    }
+
+    let url = `http://172.25.37.23:8080/USSDgetNumber/services/getNumber/${iccId}`
+    try {
+        const {data} = await axios.get(url,{timeout:10000})
+        if (data.statusCode === "0") {
+            return res.json({
+                status: 0,
+                reason: "success",
+                subscriberNumber: data.subscriberNumber
+            })
+        } else {
+            res.json({
+                status: 1,
+                reason: "Invalid serial entered. Please check back of sim"
+            })
+        }
+    } catch (ex) {
+        console.log(ex)
+        res.json({
+            status: 1,
+            reason: "System Error"
+        })
     }
 
 
