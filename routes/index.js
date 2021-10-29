@@ -1117,6 +1117,91 @@ router.get("/msisdn", passport.authenticate('basic', {
 
 });
 
+router.post("/cash",passport.authenticate('basic', {session: false}),async (req,res) =>{
+    const {error} = validator.validateCashCredit(req.body);
+    if (error) {
+        console.log(JSON.stringify(error))
+        return res.json({
+            status: 2,
+            reason: error.message.includes("required pattern")?`${iccId} is invalid format.Please check back of sim card for correct serial id`:error.message
+        })
+    }
+
+    const {amount, subscriberNumber, transactionId,channel} = req.body
+    if (channel.toLowerCase() !== req.user.channel) {
+        return res.json({
+            status: 2,
+            reason: `Invalid Request channel ${channel}`
+        })
+    }
+
+
+    try {
+        const url = "http://172.25.39.16:2222";
+        const sampleHeaders = {
+            'User-Agent': 'NodeApp',
+            'Content-Type': 'text/xml;charset=UTF-8',
+            'SOAPAction': 'http://SCLINSMSVM01P/wsdls/Surfline/VoucherRecharge_USSD/VoucherRecharge_USSD',
+            'Authorization': `${process.env.OSD_AUTH}`
+        };
+
+        const XML = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:cus="http://172.25.39.13/wsdls/Surfline/CustomRecharge.wsdl">
+       <soapenv:Header/>
+       <soapenv:Body>
+          <cus:CustomRechargeRequest>
+             <CC_Calling_Party_Id>${subscriberNumber}</CC_Calling_Party_Id>
+             <Recharge_List_List>
+                <Recharge_List>
+                   <Balance_Type_Name>General Cash</Balance_Type_Name>
+                   <Recharge_Amount>${amount}</Recharge_Amount>
+                   <Balance_Expiry_Extension_Period/>
+                   <Balance_Expiry_Extension_Policy/>
+                   <Bucket_Creation_Policy/>
+                   <Balance_Expiry_Extension_Type/>
+                </Recharge_List>
+             </Recharge_List_List>
+             <Balance_Type_Name>General Cash</Balance_Type_Name>
+             <CHANNEL>${channel}</CHANNEL>
+             <TRANSACTION_ID>${transactionId}</TRANSACTION_ID>
+             <WALLET_TYPE>Primary</WALLET_TYPE>
+          </cus:CustomRechargeRequest>
+       </soapenv:Body>
+    </soapenv:Envelope>`;
+        const {response} = await soapRequest({url: url, headers: sampleHeaders, xml: XML, timeout: 10000});
+        const {body} = response;
+        let jsonObj = parser.parse(body, options);
+        const soapResponseBody = jsonObj.Envelope.Body;
+        if (!soapResponseBody.CustomRechargeResult) {
+            res.json({status: 0, reason: "success"})
+        } else {
+            res.json({status: 1, reason: "System Error"})
+        }
+    } catch (err) {
+        let errorBody = err.toString();
+        if (parser.validate(errorBody) === true) {
+            let jsonObj = parser.parse(errorBody, options);
+            if (jsonObj.Envelope.Body.Fault) {
+                let soapFault = jsonObj.Envelope.Body.Fault;
+                let faultString = soapFault.faultstring;
+                console.log(faultString);
+                let errorcode = soapFault.detail.CustomRechargeFault.errorCode;
+                switch (errorcode) {
+                    case 60:
+                        faultString = `Subscriber number ${subscriberNumber} is INVALID`;
+                        break;
+                    default:
+                        faultString = "System Error";
+                }
+                return res.json({status: 1, reason: faultString})
+            }
+
+        }
+
+        console.log(errorBody)
+        res.json({error: "System Failure"})
+    }
+})
+
 router.post("/user", async (req, res) => {
     try {
         let {username, password, channel, accountNumber} = req.body;

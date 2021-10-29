@@ -235,6 +235,28 @@ module.exports = {
         return schema.validate(body)
 
     },
+    validateCashCredit: (body) =>{
+        const schema = Joi.object({
+
+            subscriberNumber: Joi.string()
+                .length(12)
+                .alphanum()
+                .regex(/^233.+/)
+                .required()
+                .messages({"string.pattern.base": "subscriberNumber must start with 233"}),
+            transactionId: Joi.string()
+                .required(),
+            channel: Joi.string()
+                .required(),
+            amount: Joi.number()
+                .min(1)
+                .required(),
+
+        });
+
+        return schema.validate(body)
+
+    },
 
 
 
