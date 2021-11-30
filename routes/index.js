@@ -157,6 +157,7 @@ router.get("/account", passport.authenticate('basic', {
                         'Staff_AlwaysON_3GB Count',
                         'Staff_AlwaysON_4GB Count',
                         'Staff_AlwaysON_5GB Count',
+                        'Staff_AlwaysON_10GB Count',
                         'ULNitePlan Status',
                         'ULDayNitePlan Status',
                         'ULBusiness2 Status'
