@@ -60,14 +60,16 @@ router.get("/account", passport.authenticate('basic', {
 
     try {
 
-        const {error} = validator.validateBalanceQuery(req.body);
+        const {subscriberNumber, channel} = getReqData(req);
+
+        const {error} = validator.validateBalanceQuery({subscriberNumber,channel});
         if (error) {
             return res.json({
                 status: 2,
                 reason: error.message
             })
         }
-        const {subscriberNumber, channel} = req.body;
+
         if (channel.toLowerCase() !== req.user.channel) {
             return res.json({
                 status: 2,
@@ -1224,4 +1226,10 @@ router.post("/user", async (req, res) => {
 
 
 module.exports = router;
+
+
+function getReqData(req) {
+    if (Object.keys(req.query).length > 0) return req.query
+    else return  req.body
+}
 
