@@ -19,7 +19,7 @@ mongoose.connect("mongodb://localhost/ussd", {
     app.use(express.json());
     app.use(express.urlencoded({extended: false}));
 
-    let PORT = process.env.PORT || 8000;
+    let PORT = process.env.PORT
     let HOST = process.env.PROD_HOST;
 
     if (process.env.NODE_ENV === "development") {

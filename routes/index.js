@@ -6,6 +6,7 @@ const passport = require("passport");
 const utils = require("../utils/main_utils")
 const BasicStrategy = require("passport-http").BasicStrategy;
 const axios = require("axios")
+const moment = require("moment")
 
 
 const soapRequest = require("easy-soap-request");
@@ -62,7 +63,7 @@ router.get("/account", passport.authenticate('basic', {
 
         const {subscriberNumber, channel} = getReqData(req);
 
-        const {error} = validator.validateBalanceQuery({subscriberNumber,channel});
+        const {error} = validator.validateBalanceQuery({subscriberNumber, channel});
         if (error) {
             return res.json({
                 status: 2,
@@ -107,232 +108,231 @@ router.get("/account", passport.authenticate('basic', {
         const unlimitedBalances = [];
 
 
-
-            let jsonObj = parser.parse(body, options);
-
-
-            const soapResponseBody = jsonObj.Envelope.Body
-            if (soapResponseBody.Fault) {
-                return res.json({status: 1, message: soapResponseBody.Fault.faultstring})
-
-            } else {
-                let accountType = soapResponseBody['CCSCD1_QRYResponse']['PRODUCT']
-                let accountState = soapResponseBody['CCSCD1_QRYResponse']['STATUS']
-                let balanceResult = soapResponseBody['CCSCD1_QRYResponse']['BALANCES']['BALANCE_ITEM'];
-
-                switch (accountState) {
-                    case 'A':
-                    case 'D':
-                        accountState = 'ACTIVE'
-                        break;
-                    case 'F':
-                    case 'T':
-                    case 'P':
-                    case 'S':
-                        accountState = 'INACTIVE';
-                        break
-                }
-
-                if (balanceResult) {
-
-                    const data_balanceTypes = [
-                        'Promotional Data',
-                        'Bonus Data',
-                        'Gift Data',
-                        'Ten4Ten',
-                        'TestDrive Data',
-                        'Data'
-                    ]
-
-                    let all_balances = []
-
-                    const unlimited_balanceTypes = [
-                        'UL_AlwaysON_Lite Status',
-                        'UL_AlwaysON_Starter Status',
-                        'UL_AlwaysON_Streamer Status',
-                        'UL_AlwaysON_Standard Status',
-                        'UL_AlwaysON_Super Status',
-                        'UL_AlwaysON_Ultra Status',
-                        'UL_AlwaysON_Maxi Status',
-                        'Staff_AlwaysON_1GB Count',
-                        'Staff_AlwaysON_2GB Count',
-                        'Staff_AlwaysON_3GB Count',
-                        'Staff_AlwaysON_4GB Count',
-                        'Staff_AlwaysON_5GB Count',
-                        'Staff_AlwaysON_10GB Count',
-                        'ULNitePlan Status',
-                        'ULDayNitePlan Status',
-                        'ULBusiness2 Status'
-                    ]
+        let jsonObj = parser.parse(body, options);
 
 
-                    balanceResult.forEach(function (item) {
-                        if (item.BUCKETS) {
-                            let balanceType = item.BALANCE_TYPE_NAME.toString();
+        const soapResponseBody = jsonObj.Envelope.Body
+        if (soapResponseBody.Fault) {
+            return res.json({status: 1, message: soapResponseBody.Fault.faultstring})
 
-                            if (Array.isArray(item.BUCKETS.BUCKET_ITEM)) {
-                                let bucket_item = item.BUCKETS.BUCKET_ITEM;
-                                bucket_item.forEach(function (bucket) {
-                                    let temp_balance = {}
-                                    let bucketexpiry = bucket.BUCKET_EXPIRY.toString();
-                                    temp_balance.balance_type = balanceType
-                                    temp_balance.value = bucket.BUCKET_VALUE;
-                                    temp_balance.expiry_date = bucketexpiry
-                                    all_balances.push(temp_balance)
+        } else {
+            let accountType = soapResponseBody['CCSCD1_QRYResponse']['PRODUCT']
+            let accountState = soapResponseBody['CCSCD1_QRYResponse']['STATUS']
+            let balanceResult = soapResponseBody['CCSCD1_QRYResponse']['BALANCES']['BALANCE_ITEM'];
+
+            switch (accountState) {
+                case 'A':
+                case 'D':
+                    accountState = 'ACTIVE'
+                    break;
+                case 'F':
+                case 'T':
+                case 'P':
+                case 'S':
+                    accountState = 'INACTIVE';
+                    break
+            }
+
+            if (balanceResult) {
+
+                const data_balanceTypes = [
+                    'Promotional Data',
+                    'Bonus Data',
+                    'Gift Data',
+                    'Ten4Ten',
+                    'TestDrive Data',
+                    'Data'
+                ]
+
+                let all_balances = []
+
+                const unlimited_balanceTypes = [
+                    'UL_AlwaysON_Lite Status',
+                    'UL_AlwaysON_Starter Status',
+                    'UL_AlwaysON_Streamer Status',
+                    'UL_AlwaysON_Standard Status',
+                    'UL_AlwaysON_Super Status',
+                    'UL_AlwaysON_Ultra Status',
+                    'UL_AlwaysON_Maxi Status',
+                    'Staff_AlwaysON_1GB Count',
+                    'Staff_AlwaysON_2GB Count',
+                    'Staff_AlwaysON_3GB Count',
+                    'Staff_AlwaysON_4GB Count',
+                    'Staff_AlwaysON_5GB Count',
+                    'Staff_AlwaysON_10GB Count',
+                    'ULNitePlan Status',
+                    'ULDayNitePlan Status',
+                    'ULBusiness2 Status'
+                ]
 
 
-                                })
+                balanceResult.forEach(function (item) {
+                    if (item.BUCKETS) {
+                        let balanceType = item.BALANCE_TYPE_NAME.toString();
 
-
-                            } else {
-
-                                let bucket = item.BUCKETS.BUCKET_ITEM
-                                let bucketexpiry = bucket.BUCKET_EXPIRY.toString();
-
-
+                        if (Array.isArray(item.BUCKETS.BUCKET_ITEM)) {
+                            let bucket_item = item.BUCKETS.BUCKET_ITEM;
+                            bucket_item.forEach(function (bucket) {
                                 let temp_balance = {}
+                                let bucketexpiry = bucket.BUCKET_EXPIRY.toString();
                                 temp_balance.balance_type = balanceType
                                 temp_balance.value = bucket.BUCKET_VALUE;
                                 temp_balance.expiry_date = bucketexpiry
                                 all_balances.push(temp_balance)
 
-                            }
-                        }
 
-
-                    });
-
-                    all_balances = all_balances.filter(item => data_balanceTypes.includes(item.balance_type) || unlimited_balanceTypes.includes(item.balance_type) || item.balance_type === 'Bundle ExpiryTrack Status' || item.balance_type.endsWith('Surfplus Data') || item.balance_type.endsWith('Cash'))
-                    const bundleExpiryTrack = all_balances.find(item => item.balance_type === 'Bundle ExpiryTrack Status')
-                    const mainDataExpiry = bundleExpiryTrack ? utils.formatDate(bundleExpiryTrack.expiry_date) : null
-
-                    let mainDataValue = 0;
-                    let cashBalanceValue = 0;
-                    all_balances.forEach(item => {
-                        const balanceType = item.balance_type.toString();
-                        const balanceValue = item.value ? item.value : 0;
-                        const expiry_date = item.expiry_date ? utils.formatDate(item.expiry_date) : null
-                        if (balanceType.endsWith('Surfplus Data')) {
-                            mainDataValue += item.value
-
-                        } else if (balanceType === 'General Cash' && balanceValue > 0) {
-                            cashBalanceValue += balanceValue
-
-
-                        } else if (balanceType === 'UL_AlwaysON_Lite Status' && balanceValue > 0) {
-                            unlimitedBalances.push({
-                                balance_type: 'AlwaysON Lite Package',
-                                value: 'ACTIVE',
-                                expiry_date
                             })
 
-                        } else if (balanceType === 'UL_AlwaysON_Standard Status' && balanceValue > 0) {
-                            unlimitedBalances.push({
-                                balance_type: 'AlwaysON Standard Package',
-                                value: 'ACTIVE',
-                                expiry_date
-                            })
 
-                        } else if (balanceType === 'UL_AlwaysON_Starter Status' && balanceValue > 0) {
-                            unlimitedBalances.push({
-                                balance_type: 'AlwaysON Starter Package',
-                                value: 'ACTIVE',
-                                expiry_date
-                            })
+                        } else {
 
-                        } else if (balanceType === 'UL_AlwaysON_Streamer Status' && balanceValue > 0) {
-                            unlimitedBalances.push({
-                                balance_type: 'AlwaysON Streamer Package',
-                                value: 'ACTIVE',
-                                expiry_date
-                            })
+                            let bucket = item.BUCKETS.BUCKET_ITEM
+                            let bucketexpiry = bucket.BUCKET_EXPIRY.toString();
 
-                        } else if (balanceType === 'UL_AlwaysON_Super Status' && balanceValue > 0) {
-                            unlimitedBalances.push({
-                                balance_type: 'AlwaysON Super Package',
-                                value: 'ACTIVE',
-                                expiry_date
-                            })
 
-                        } else if (balanceType === 'UL_AlwaysON_Ultra Status' && balanceValue > 0) {
-                            unlimitedBalances.push({
-                                balance_type: 'AlwaysON Ultra Package',
-                                value: 'ACTIVE',
-                                expiry_date
-                            })
-
-                        } else if (balanceType === 'UL_AlwaysON_Maxi Status' && balanceValue > 0) {
-                            unlimitedBalances.push({
-                                balance_type: 'AlwaysON Maxi Package',
-                                value: 'ACTIVE',
-                                expiry_date
-                            })
-
-                        } else if (balanceType === 'ULNitePlan Status' && balanceValue > 0) {
-                            unlimitedBalances.push({
-                                balance_type: 'Unlimited Night Package',
-                                value: 'ACTIVE',
-                                expiry_date
-                            })
-
-                        } else if (balanceType === 'ULDayNitePlan Status' && balanceValue > 0) {
-                            unlimitedBalances.push({
-                                balance_type: 'Unlimited Package',
-                                value: 'ACTIVE',
-                                expiry_date
-                            })
-
-                        } else if (balanceType === 'ULBusiness2 Status' && balanceValue > 0) {
-                            unlimitedBalances.push({
-                                balance_type: 'Unlimited Business Package',
-                                value: 'ACTIVE',
-                                expiry_date
-                            })
-
-                        } else if (balanceType.match(/^Staff.*Count/) && balanceValue > 0) {
-                            unlimitedBalances.push({
-                                balance_type: 'Staff Package',
-                                value: 'ACTIVE',
-                                expiry_date
-                            })
+                            let temp_balance = {}
+                            temp_balance.balance_type = balanceType
+                            temp_balance.value = bucket.BUCKET_VALUE;
+                            temp_balance.expiry_date = bucketexpiry
+                            all_balances.push(temp_balance)
 
                         }
-                    })
-
-                    let promo_balances = all_balances.filter(item => data_balanceTypes.includes(item.balance_type))
-                    promo_balances = promo_balances.map(item => {
-
-                        item.value = item.value ? parseFloat(item.value / 1024).toFixed(3) : 0;
-                        item.expiry_date = item.expiry_date ? utils.formatDate(item.expiry_date) : null;
-                        return item;
-
-                    })
-
-                    res.json({
-                        status: 0,
-                        reason: "success",
-                        subscriberNumber,
-                        accountState,
-                        accountType,
-
-                        account_balance: {
-                            cash_balance: [{
-                                balance_type: 'Cash',
-                                value: parseFloat(cashBalanceValue / 100).toFixed(2),
-                                expiry_date: null
-                            }],
-                            data_balance: [{
-                                balance_type: "Data",
-                                value: parseFloat(mainDataValue / 1024).toFixed(3),
-                                expiry_date: mainDataExpiry
-                            }, ...promo_balances],
-                            unlimited_balance: unlimitedBalances
-                        }
-                    })
+                    }
 
 
-                }
+                });
+
+                all_balances = all_balances.filter(item => data_balanceTypes.includes(item.balance_type) || unlimited_balanceTypes.includes(item.balance_type) || item.balance_type === 'Bundle ExpiryTrack Status' || item.balance_type.endsWith('Surfplus Data') || item.balance_type.endsWith('Cash'))
+                const bundleExpiryTrack = all_balances.find(item => item.balance_type === 'Bundle ExpiryTrack Status')
+                const mainDataExpiry = bundleExpiryTrack ? utils.formatDate(bundleExpiryTrack.expiry_date) : null
+
+                let mainDataValue = 0;
+                let cashBalanceValue = 0;
+                all_balances.forEach(item => {
+                    const balanceType = item.balance_type.toString();
+                    const balanceValue = item.value ? item.value : 0;
+                    const expiry_date = item.expiry_date ? utils.formatDate(item.expiry_date) : null
+                    if (balanceType.endsWith('Surfplus Data')) {
+                        mainDataValue += item.value
+
+                    } else if (balanceType === 'General Cash' && balanceValue > 0) {
+                        cashBalanceValue += balanceValue
+
+
+                    } else if (balanceType === 'UL_AlwaysON_Lite Status' && balanceValue > 0) {
+                        unlimitedBalances.push({
+                            balance_type: 'AlwaysON Lite Package',
+                            value: 'ACTIVE',
+                            expiry_date
+                        })
+
+                    } else if (balanceType === 'UL_AlwaysON_Standard Status' && balanceValue > 0) {
+                        unlimitedBalances.push({
+                            balance_type: 'AlwaysON Standard Package',
+                            value: 'ACTIVE',
+                            expiry_date
+                        })
+
+                    } else if (balanceType === 'UL_AlwaysON_Starter Status' && balanceValue > 0) {
+                        unlimitedBalances.push({
+                            balance_type: 'AlwaysON Starter Package',
+                            value: 'ACTIVE',
+                            expiry_date
+                        })
+
+                    } else if (balanceType === 'UL_AlwaysON_Streamer Status' && balanceValue > 0) {
+                        unlimitedBalances.push({
+                            balance_type: 'AlwaysON Streamer Package',
+                            value: 'ACTIVE',
+                            expiry_date
+                        })
+
+                    } else if (balanceType === 'UL_AlwaysON_Super Status' && balanceValue > 0) {
+                        unlimitedBalances.push({
+                            balance_type: 'AlwaysON Super Package',
+                            value: 'ACTIVE',
+                            expiry_date
+                        })
+
+                    } else if (balanceType === 'UL_AlwaysON_Ultra Status' && balanceValue > 0) {
+                        unlimitedBalances.push({
+                            balance_type: 'AlwaysON Ultra Package',
+                            value: 'ACTIVE',
+                            expiry_date
+                        })
+
+                    } else if (balanceType === 'UL_AlwaysON_Maxi Status' && balanceValue > 0) {
+                        unlimitedBalances.push({
+                            balance_type: 'AlwaysON Maxi Package',
+                            value: 'ACTIVE',
+                            expiry_date
+                        })
+
+                    } else if (balanceType === 'ULNitePlan Status' && balanceValue > 0) {
+                        unlimitedBalances.push({
+                            balance_type: 'Unlimited Night Package',
+                            value: 'ACTIVE',
+                            expiry_date
+                        })
+
+                    } else if (balanceType === 'ULDayNitePlan Status' && balanceValue > 0) {
+                        unlimitedBalances.push({
+                            balance_type: 'Unlimited Package',
+                            value: 'ACTIVE',
+                            expiry_date
+                        })
+
+                    } else if (balanceType === 'ULBusiness2 Status' && balanceValue > 0) {
+                        unlimitedBalances.push({
+                            balance_type: 'Unlimited Business Package',
+                            value: 'ACTIVE',
+                            expiry_date
+                        })
+
+                    } else if (balanceType.match(/^Staff.*Count/) && balanceValue > 0) {
+                        unlimitedBalances.push({
+                            balance_type: 'Staff Package',
+                            value: 'ACTIVE',
+                            expiry_date
+                        })
+
+                    }
+                })
+
+                let promo_balances = all_balances.filter(item => data_balanceTypes.includes(item.balance_type))
+                promo_balances = promo_balances.map(item => {
+
+                    item.value = item.value ? parseFloat(item.value / 1024).toFixed(3) : 0;
+                    item.expiry_date = item.expiry_date ? utils.formatDate(item.expiry_date) : null;
+                    return item;
+
+                })
+
+                res.json({
+                    status: 0,
+                    reason: "success",
+                    subscriberNumber,
+                    accountState,
+                    accountType,
+
+                    account_balance: {
+                        cash_balance: [{
+                            balance_type: 'Cash',
+                            value: parseFloat(cashBalanceValue / 100).toFixed(2),
+                            expiry_date: null
+                        }],
+                        data_balance: [{
+                            balance_type: "Data",
+                            value: parseFloat(mainDataValue / 1024).toFixed(3),
+                            expiry_date: mainDataExpiry
+                        }, ...promo_balances],
+                        unlimited_balance: unlimitedBalances
+                    }
+                })
+
+
             }
+        }
 
     } catch (error) {
         console.log(error)
@@ -663,8 +663,7 @@ router.post("/bundles_ca", passport.authenticate('basic', {
                 break;
             case 55:
                 faultMessage = "Account has insufficient credit/General Failure";
-                break;
-
+                break
             case 102:
                 faultMessage = "Purchase not allowed.Account has active unlimited bundle";
                 break;
@@ -681,7 +680,7 @@ router.post("/bundles_ca", passport.authenticate('basic', {
 
 })
 
-router.post("/bundles_ep", passport.authenticate('basic', {
+/*router.post("/bundles_ep", passport.authenticate('basic', {
     session: false
 }), async (req, res) => {
 
@@ -789,7 +788,7 @@ router.post("/bundles_ep", passport.authenticate('basic', {
 
     }
 
-})
+})*/
 
 router.post("/redeem_extra", passport.authenticate('basic', {
     session: false
@@ -1084,7 +1083,7 @@ router.get("/msisdn", passport.authenticate('basic', {
         console.log(JSON.stringify(error))
         return res.json({
             status: 2,
-            reason: error.message.includes("required pattern")?`${iccId} is invalid format.Please check back of sim card for correct serial id`:error.message
+            reason: error.message.includes("required pattern") ? `${iccId} is invalid format.Please check back of sim card for correct serial id` : error.message
         })
     }
     if (channel.toLowerCase() !== req.user.channel) {
@@ -1096,7 +1095,7 @@ router.get("/msisdn", passport.authenticate('basic', {
 
     let url = `http://172.25.37.23:8080/USSDgetNumber/services/getNumber/${iccId}`
     try {
-        const {data} = await axios.get(url,{timeout:10000})
+        const {data} = await axios.get(url, {timeout: 10000})
         if (data.statusCode === "0") {
             return res.json({
                 status: 0,
@@ -1120,17 +1119,17 @@ router.get("/msisdn", passport.authenticate('basic', {
 
 });
 
-router.post("/cash",passport.authenticate('basic', {session: false}),async (req,res) =>{
+router.post("/cash", passport.authenticate('basic', {session: false}), async (req, res) => {
     const {error} = validator.validateCashCredit(req.body);
     if (error) {
         console.log(JSON.stringify(error))
         return res.json({
             status: 2,
-            reason: error.message.includes("required pattern")?`${iccId} is invalid format.Please check back of sim card for correct serial id`:error.message
+            reason: error.message.includes("required pattern") ? `${iccId} is invalid format.Please check back of sim card for correct serial id` : error.message
         })
     }
 
-    const {amount, subscriberNumber, transactionId,channel} = req.body
+    const {amount, subscriberNumber, transactionId, channel} = req.body
     if (channel.toLowerCase() !== req.user.channel) {
         return res.json({
             status: 2,
@@ -1205,6 +1204,112 @@ router.post("/cash",passport.authenticate('basic', {session: false}),async (req,
     }
 })
 
+router.get("/usage_hist", passport.authenticate('basic', {session: false}), async (req, res) => {
+    let {subscriberNumber, channel} = req.query;
+    const {error} = validator.validateBalanceQuery({subscriberNumber, channel});
+    if (error) {
+        return res.json({
+            status: 2,
+            reason: error.message
+        })
+    }
+    if (channel.toLowerCase() !== req.user.channel) {
+        return res.json({
+            status: 2,
+            reason: `Invalid Request channel ${channel}`
+        })
+    }
+
+    try {
+        const url = "http://172.25.39.13:3004";
+        const sampleHeaders = {
+            'User-Agent': 'NodeApp',
+            'Content-Type': 'text/xml;charset=UTF-8',
+            'SOAPAction': 'urn:CCSCD7_QRY',
+        };
+        let xmlRequest = `
+    <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:pi="http://xmlns.oracle.com/communications/ncc/2009/05/15/pi">
+       <soapenv:Header/>
+       <soapenv:Body>
+          <pi:CCSCD7_QRY>
+             <pi:AUTH/>
+             <pi:username>${process.env.PI_USER}</pi:username>
+             <pi:password>${process.env.PI_PASS}</pi:password>
+             <pi:MSISDN>${subscriberNumber}</pi:MSISDN>
+             <pi:WALLET_TYPE>Primary</pi:WALLET_TYPE>
+             <pi:EDR_TYPE>1</pi:EDR_TYPE>
+             <pi:MAX_RECORDS>500</pi:MAX_RECORDS>
+             <pi:DAYS/>
+          </pi:CCSCD7_QRY>
+       </soapenv:Body>
+    </soapenv:Envelope>
+    `;
+        const {response} = await soapRequest({url: url, headers: sampleHeaders, xml: xmlRequest, timeout: 15000}); // Optional timeout parameter(milliseconds)
+        const {body} = response;
+        let jsonObj = parser.parse(body, options);
+        if (jsonObj.Envelope.Body.CCSCD7_QRYResponse) {
+            let finalResult = [];
+            let obj = {}
+            if (jsonObj['Envelope']['Body']['CCSCD7_QRYResponse']['EDRS'] && jsonObj['Envelope']['Body']['CCSCD7_QRYResponse']['EDRS']['EDR_ITEM']) {
+                let result = jsonObj['Envelope']['Body']['CCSCD7_QRYResponse']['EDRS']['EDR_ITEM'];
+                if (Array.isArray(result)) {
+                    result.forEach(function (edr) {
+                        if (!edr.EXTRA_INFORMATION.includes("NACK=INSF")) {
+                            let record_date = edr.RECORD_DATE.toString().substr(0, 8);
+                            let cost = (/DURATION_CHARGED=(.+?)\|/i.exec(edr.EXTRA_INFORMATION))[1]
+                            cost = cost ? parseFloat(cost) : 0
+                            obj[record_date] = obj[record_date] === undefined ? cost : obj[record_date] + cost
+                        }
+                    });
+
+                } else {
+                    let edr = result;
+                    if (!edr.EXTRA_INFORMATION.includes("NACK=INSF")) {
+                        let record_date = edr.RECORD_DATE.toString().substr(0, 8);
+                        let cost = (/DURATION_CHARGED=(.+?)\|/i.exec(edr.EXTRA_INFORMATION))[1];
+                        cost = cost ? parseFloat(cost) : 0
+                        obj[record_date] = obj[record_date] === undefined ? cost : obj[record_date] + cost
+                    }
+
+                }
+
+            }
+
+            if (Object.keys(obj).length > 0){
+
+                for (const [k, v] of Object.entries(obj)) {
+                    finalResult.push({record_date: k, cost: v})
+                }
+                finalResult = finalResult.sort((a, b) => b.record_date - a.record_date).map(value => {
+                    let {record_date, cost} = value
+                    record_date = moment(record_date, "YYYYMMDD").format("DD-MM-YYYY")
+                    cost = (cost / 1024).toFixed(3)
+                    return {record_date, cost}
+                })
+
+            }
+
+            res.json({status: 0, reason: "success", data: finalResult})
+
+        } else {
+            let soapFault = jsonObj.Envelope.Body.Fault;
+            let faultString = soapFault.faultstring;
+            console.log(soapFault)
+            return res.json({status: 1, reason: faultString})
+        }
+
+
+    } catch (ex) {
+        console.log(ex)
+        res.json({
+            status: 1,
+            reason: "System Error"
+        })
+    }
+
+
+});
+
 router.post("/user", async (req, res) => {
     try {
         let {username, password, channel, accountNumber} = req.body;
@@ -1230,6 +1335,7 @@ module.exports = router;
 
 function getReqData(req) {
     if (Object.keys(req.query).length > 0) return req.query
-    else return  req.body
+    else return req.body
 }
+
 
