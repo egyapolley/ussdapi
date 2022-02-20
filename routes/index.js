@@ -141,6 +141,7 @@ router.get("/account", passport.authenticate('basic', {
                     'Gift Data',
                     'Ten4Ten',
                     'TestDrive Data',
+                    'SanBraFie Data',
                     'Data'
                 ]
 
@@ -162,7 +163,10 @@ router.get("/account", passport.authenticate('basic', {
                     'Staff_AlwaysON_10GB Count',
                     'ULNitePlan Status',
                     'ULDayNitePlan Status',
-                    'ULBusiness2 Status'
+                    'ULBusiness2 Status',
+                    'TaxifyUL_Lite Status',
+                    'TaxifyUL_Super Status',
+                    'UL_AlwaysON_OneYear Status'
                 ]
 
 
@@ -289,7 +293,21 @@ router.get("/account", passport.authenticate('basic', {
                             expiry_date
                         })
 
-                    } else if (balanceType.match(/^Staff.*Count/) && balanceValue > 0) {
+                    } else if (balanceType === 'TaxifyUL_Lite Status' && balanceValue > 0) {
+                        unlimitedBalances.push({
+                            balance_type: 'Unlimited Lite',
+                            value: 'ACTIVE',
+                            expiry_date
+                        })
+
+                    }else if (balanceType === 'TaxifyUL_Super Status' && balanceValue > 0) {
+                        unlimitedBalances.push({
+                            balance_type: 'Unlimited Super',
+                            value: 'ACTIVE',
+                            expiry_date
+                        })
+
+                    }else if (balanceType.match(/^Staff.*Count/) && balanceValue > 0) {
                         unlimitedBalances.push({
                             balance_type: 'Staff Package',
                             value: 'ACTIVE',
