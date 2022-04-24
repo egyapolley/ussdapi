@@ -145,6 +145,23 @@ router.get("/account", passport.authenticate('basic', {
                     'Data'
                 ]
 
+                const unlimited_data ={
+                    'UL_AlwaysON_Lite Data':'AlwaysON Lite Data',
+                    'UL_AlwaysON_Starter Data':'AlwaysON Starter Data',
+                    'UL_AlwaysON_Streamer Data':'AlwaysON Streamer Data',
+                    'UL_AlwaysON_Standard Data':'AlwaysON Standard Data',
+                    'UL_AlwaysON_Super Data':'AlwaysON Super Data',
+                    'UL_AlwaysON_Ultra Data':'AlwaysON Ultra Data',
+                    'UL_AlwaysON_Maxi Data':'AlwaysON Maxi Data',
+                    'UL_AlwaysON_OneYear Data':'Yolo Data',
+                    'Staff_AlwaysON_1GB Data':' Staff Data',
+                    'Staff_AlwaysON_2GB Data':'Staff Data',
+                    'Staff_AlwaysON_3GB Data':'Staff Data',
+                    'Staff_AlwaysON_4GB Data':'Staff Data',
+                    'Staff_AlwaysON_5GB Data':'Staff Data',
+                    'Staff_AlwaysON_10GB Data':'Staff Data',
+                }
+
                 let all_balances = []
 
                 const unlimited_balanceTypes = [
@@ -155,6 +172,7 @@ router.get("/account", passport.authenticate('basic', {
                     'UL_AlwaysON_Super Status',
                     'UL_AlwaysON_Ultra Status',
                     'UL_AlwaysON_Maxi Status',
+                    'UL_AlwaysON_OneYear Status',
                     'Staff_AlwaysON_1GB Count',
                     'Staff_AlwaysON_2GB Count',
                     'Staff_AlwaysON_3GB Count',
@@ -206,7 +224,7 @@ router.get("/account", passport.authenticate('basic', {
 
                 });
 
-                all_balances = all_balances.filter(item => data_balanceTypes.includes(item.balance_type) || unlimited_balanceTypes.includes(item.balance_type) || item.balance_type === 'Bundle ExpiryTrack Status' || item.balance_type.endsWith('Surfplus Data') || item.balance_type.endsWith('Cash'))
+                all_balances = all_balances.filter(item => data_balanceTypes.includes(item.balance_type) || unlimited_balanceTypes.includes(item.balance_type) || item.balance_type === 'Bundle ExpiryTrack Status' || item.balance_type.endsWith('Surfplus Data') || item.balance_type.endsWith('Cash')||Object.keys(unlimited_data).includes(item.balance_type))
                 const bundleExpiryTrack = all_balances.find(item => item.balance_type === 'Bundle ExpiryTrack Status')
                 const mainDataExpiry = bundleExpiryTrack ? utils.formatDate(bundleExpiryTrack.expiry_date) : null
 
@@ -237,7 +255,16 @@ router.get("/account", passport.authenticate('basic', {
                             expiry_date
                         })
 
-                    } else if (balanceType === 'UL_AlwaysON_Starter Status' && balanceValue > 0) {
+                    }
+                    else if (balanceType === 'UL_AlwaysON_OneYear Status' && balanceValue > 0) {
+                        unlimitedBalances.push({
+                            balance_type: 'Yolo Package',
+                            value: 'ACTIVE',
+                            expiry_date
+                        })
+
+                    }
+                    else if (balanceType === 'UL_AlwaysON_Starter Status' && balanceValue > 0) {
                         unlimitedBalances.push({
                             balance_type: 'AlwaysON Starter Package',
                             value: 'ACTIVE',
@@ -326,6 +353,16 @@ router.get("/account", passport.authenticate('basic', {
 
                 })
 
+                let unlimited_data_temp = all_balances.filter(item => Object.keys(unlimited_data).includes(item.balance_type))
+
+                unlimited_data_temp = unlimited_data_temp.map(item =>{
+                    item.value = item.value ? parseFloat(item.value / 1024).toFixed(3) : 0;
+                    item.expiry_date =  null;
+                    item.balance_type = unlimited_data[item.balance_type]
+                    return item
+
+                })
+
                 res.json({
                     status: 0,
                     reason: "success",
@@ -343,7 +380,7 @@ router.get("/account", passport.authenticate('basic', {
                             balance_type: "Data",
                             value: parseFloat(mainDataValue / 1024).toFixed(3),
                             expiry_date: mainDataExpiry
-                        }, ...promo_balances],
+                        }, ...promo_balances,...unlimited_data_temp],
                         unlimited_balance: unlimitedBalances
                     }
                 })
