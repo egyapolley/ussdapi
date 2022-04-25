@@ -162,6 +162,10 @@ router.get("/account", passport.authenticate('basic', {
                     'Staff_AlwaysON_10GB Data':'Staff Data',
                 }
 
+                const zero_data_unlimited = [
+
+                ]
+
                 let all_balances = []
 
                 const unlimited_balanceTypes = [
@@ -247,12 +251,22 @@ router.get("/account", passport.authenticate('basic', {
                             value: 'ACTIVE',
                             expiry_date
                         })
+                        zero_data_unlimited.push({
+                            balanceType:'AlwaysON Lite Data',
+                            value:0,
+                            expiry_date:null,
+                        })
 
                     } else if (balanceType === 'UL_AlwaysON_Standard Status' && balanceValue > 0) {
                         unlimitedBalances.push({
                             balance_type: 'AlwaysON Standard Package',
                             value: 'ACTIVE',
                             expiry_date
+                        })
+                        zero_data_unlimited.push({
+                            balanceType:'AlwaysON Standard Data',
+                            value:0,
+                            expiry_date:null,
                         })
 
                     }
@@ -263,6 +277,12 @@ router.get("/account", passport.authenticate('basic', {
                             expiry_date
                         })
 
+                        zero_data_unlimited.push({
+                            balanceType:'Yolo Data',
+                            value:0,
+                            expiry_date:null,
+                        })
+
                     }
                     else if (balanceType === 'UL_AlwaysON_Starter Status' && balanceValue > 0) {
                         unlimitedBalances.push({
@@ -270,12 +290,22 @@ router.get("/account", passport.authenticate('basic', {
                             value: 'ACTIVE',
                             expiry_date
                         })
+                        zero_data_unlimited.push({
+                            balanceType:'AlwaysON Starter Data',
+                            value:0,
+                            expiry_date:null,
+                        })
 
                     } else if (balanceType === 'UL_AlwaysON_Streamer Status' && balanceValue > 0) {
                         unlimitedBalances.push({
                             balance_type: 'AlwaysON Streamer Package',
                             value: 'ACTIVE',
                             expiry_date
+                        })
+                        zero_data_unlimited.push({
+                            balanceType:'AlwaysON Streamer Data',
+                            value:0,
+                            expiry_date:null,
                         })
 
                     } else if (balanceType === 'UL_AlwaysON_Super Status' && balanceValue > 0) {
@@ -285,6 +315,12 @@ router.get("/account", passport.authenticate('basic', {
                             expiry_date
                         })
 
+                        zero_data_unlimited.push({
+                            balanceType:'AlwaysON Super Data',
+                            value:0,
+                            expiry_date:null,
+                        })
+
                     } else if (balanceType === 'UL_AlwaysON_Ultra Status' && balanceValue > 0) {
                         unlimitedBalances.push({
                             balance_type: 'AlwaysON Ultra Package',
@@ -292,11 +328,23 @@ router.get("/account", passport.authenticate('basic', {
                             expiry_date
                         })
 
+                        zero_data_unlimited.push({
+                            balanceType:'AlwaysON Ultra Data',
+                            value:0,
+                            expiry_date:null,
+                        })
+
                     } else if (balanceType === 'UL_AlwaysON_Maxi Status' && balanceValue > 0) {
                         unlimitedBalances.push({
                             balance_type: 'AlwaysON Maxi Package',
                             value: 'ACTIVE',
                             expiry_date
+                        })
+
+                        zero_data_unlimited.push({
+                            balanceType:'AlwaysON Maxi Data',
+                            value:0,
+                            expiry_date:null,
                         })
 
                     } else if (balanceType === 'ULNitePlan Status' && balanceValue > 0) {
@@ -341,6 +389,12 @@ router.get("/account", passport.authenticate('basic', {
                             expiry_date
                         })
 
+                        zero_data_unlimited.push({
+                            balanceType:'Staff Data',
+                            value:0,
+                            expiry_date:null,
+                        })
+
                     }
                 })
 
@@ -363,6 +417,20 @@ router.get("/account", passport.authenticate('basic', {
 
                 })
 
+                unlimited_data_temp.sort((a, b) => b.value - a.value)
+
+                let finalUnlimitedData = unlimited_data_temp.length >0 ? unlimited_data_temp[0]: zero_data_unlimited.length>0?zero_data_unlimited[0]:null;
+
+                const data_balance = [
+                    {
+                        balance_type: "Data",
+                        value: parseFloat(mainDataValue / 1024).toFixed(3),
+                        expiry_date: mainDataExpiry
+                    }, ...promo_balances
+
+                ]
+                if (finalUnlimitedData) data_balance.push(finalUnlimitedData)
+
                 res.json({
                     status: 0,
                     reason: "success",
@@ -376,11 +444,7 @@ router.get("/account", passport.authenticate('basic', {
                             value: parseFloat(cashBalanceValue / 100).toFixed(2),
                             expiry_date: null
                         }],
-                        data_balance: [{
-                            balance_type: "Data",
-                            value: parseFloat(mainDataValue / 1024).toFixed(3),
-                            expiry_date: mainDataExpiry
-                        }, ...promo_balances,...unlimited_data_temp],
+                        data_balance,
                         unlimited_balance: unlimitedBalances
                     }
                 })
