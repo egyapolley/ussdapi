@@ -142,6 +142,7 @@ router.get("/account", passport.authenticate('basic', {
                     'Ten4Ten',
                     'TestDrive Data',
                     'SanBraFie Data',
+                    'Pay Weekly Data',
                     'Data'
                 ]
 

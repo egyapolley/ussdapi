@@ -111,7 +111,8 @@
       <workItem from="1646816532993" duration="97000" />
       <workItem from="1646817967070" duration="613000" />
       <workItem from="1650834895790" duration="5042000" />
-      <workItem from="1650872070479" duration="1881000" />
+      <workItem from="1650872070479" duration="2577000" />
+      <workItem from="1650962932348" duration="1036000" />
     </task>
     <task id="LOCAL-00001" summary="New api for Co-Chat">
       <created>1611274361437</created>
@@ -169,7 +170,14 @@
       <option name="project" value="LOCAL" />
       <updated>1650841766279</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="New api for Co-Chat">
+      <created>1650874064520</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1650874064520</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
