@@ -150,9 +150,9 @@ router.get("/account", passport.authenticate('basic', {
                     'UL_AlwaysON_Lite Data':'AlwaysON Lite Data',
                     'UL_AlwaysON_Starter Data':'AlwaysON Starter Data',
                     'UL_AlwaysON_Streamer Data':'AlwaysON Streamer Data',
-                    'UL_AlwaysON_Standard Data':'AlwaysON Standard Data',
-                    'UL_AlwaysON_Super Data':'AlwaysON Super Data',
-                    'UL_AlwaysON_Ultra Data':'AlwaysON Ultra Data',
+                    'UL_AlwaysON_Standard Data':'BigXtra Standard Data',
+                    'UL_AlwaysON_Super Data':'BigXtra Super Data',
+                    'UL_AlwaysON_Ultra Data':'BigXtra Ultra Data',
                     'UL_AlwaysON_Maxi Data':'AlwaysON Maxi Data',
                     'UL_AlwaysON_OneYear Data':'Yolo Data',
                     'Staff_AlwaysON_1GB Data':' Staff Data',
@@ -260,12 +260,12 @@ router.get("/account", passport.authenticate('basic', {
 
                     } else if (balanceType === 'UL_AlwaysON_Standard Status' && balanceValue > 0) {
                         unlimitedBalances.push({
-                            balance_type: 'AlwaysON Standard Package',
+                            balance_type: 'BigXtra Standard Package',
                             value: 'ACTIVE',
                             expiry_date
                         })
                         zero_data_unlimited.push({
-                            balanceType:'AlwaysON Standard Data',
+                            balanceType:'BigXtra Standard Data',
                             value:0,
                             expiry_date:null,
                         })
@@ -311,26 +311,26 @@ router.get("/account", passport.authenticate('basic', {
 
                     } else if (balanceType === 'UL_AlwaysON_Super Status' && balanceValue > 0) {
                         unlimitedBalances.push({
-                            balance_type: 'AlwaysON Super Package',
+                            balance_type: 'BigXtra Super Package',
                             value: 'ACTIVE',
                             expiry_date
                         })
 
                         zero_data_unlimited.push({
-                            balanceType:'AlwaysON Super Data',
+                            balanceType:'BigXtra Super Data',
                             value:0,
                             expiry_date:null,
                         })
 
                     } else if (balanceType === 'UL_AlwaysON_Ultra Status' && balanceValue > 0) {
                         unlimitedBalances.push({
-                            balance_type: 'AlwaysON Ultra Package',
+                            balance_type: 'BigXtra Ultra Package',
                             value: 'ACTIVE',
                             expiry_date
                         })
 
                         zero_data_unlimited.push({
-                            balanceType:'AlwaysON Ultra Data',
+                            balanceType:'BigXtra Ultra Data',
                             value:0,
                             expiry_date:null,
                         })
