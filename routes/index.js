@@ -146,26 +146,24 @@ router.get("/account", passport.authenticate('basic', {
                     'Data'
                 ]
 
-                const unlimited_data ={
-                    'UL_AlwaysON_Lite Data':'AlwaysON Lite Data',
-                    'UL_AlwaysON_Starter Data':'AlwaysON Starter Data',
-                    'UL_AlwaysON_Streamer Data':'AlwaysON Streamer Data',
-                    'UL_AlwaysON_Standard Data':'BigXtra Standard Data',
-                    'UL_AlwaysON_Super Data':'BigXtra Super Data',
-                    'UL_AlwaysON_Ultra Data':'BigXtra Ultra Data',
-                    'UL_AlwaysON_Maxi Data':'AlwaysON Maxi Data',
-                    'UL_AlwaysON_OneYear Data':'Yolo Data',
-                    'Staff_AlwaysON_1GB Data':' Staff Data',
-                    'Staff_AlwaysON_2GB Data':'Staff Data',
-                    'Staff_AlwaysON_3GB Data':'Staff Data',
-                    'Staff_AlwaysON_4GB Data':'Staff Data',
-                    'Staff_AlwaysON_5GB Data':'Staff Data',
-                    'Staff_AlwaysON_10GB Data':'Staff Data',
+                const unlimited_data = {
+                    'UL_AlwaysON_Lite Data': 'AlwaysON Lite Data',
+                    'UL_AlwaysON_Starter Data': 'AlwaysON Starter Data',
+                    'UL_AlwaysON_Streamer Data': 'AlwaysON Streamer Data',
+                    'UL_AlwaysON_Standard Data': 'BigXtra Standard Data',
+                    'UL_AlwaysON_Super Data': 'BigXtra Super Data',
+                    'UL_AlwaysON_Ultra Data': 'BigXtra Ultra Data',
+                    'UL_AlwaysON_Maxi Data': 'AlwaysON Maxi Data',
+                    'UL_AlwaysON_OneYear Data': 'Yolo Data',
+                    'Staff_AlwaysON_1GB Data': ' Staff Data',
+                    'Staff_AlwaysON_2GB Data': 'Staff Data',
+                    'Staff_AlwaysON_3GB Data': 'Staff Data',
+                    'Staff_AlwaysON_4GB Data': 'Staff Data',
+                    'Staff_AlwaysON_5GB Data': 'Staff Data',
+                    'Staff_AlwaysON_10GB Data': 'Staff Data',
                 }
 
-                const zero_data_unlimited = [
-
-                ]
+                const zero_data_unlimited = []
 
                 let all_balances = []
 
@@ -229,7 +227,7 @@ router.get("/account", passport.authenticate('basic', {
 
                 });
 
-                all_balances = all_balances.filter(item => data_balanceTypes.includes(item.balance_type) || unlimited_balanceTypes.includes(item.balance_type) || item.balance_type === 'Bundle ExpiryTrack Status' || item.balance_type.endsWith('Surfplus Data') || item.balance_type.endsWith('Cash')||Object.keys(unlimited_data).includes(item.balance_type))
+                all_balances = all_balances.filter(item => data_balanceTypes.includes(item.balance_type) || unlimited_balanceTypes.includes(item.balance_type) || item.balance_type === 'Bundle ExpiryTrack Status' || item.balance_type.endsWith('Surfplus Data') || item.balance_type.endsWith('Cash') || Object.keys(unlimited_data).includes(item.balance_type))
                 const bundleExpiryTrack = all_balances.find(item => item.balance_type === 'Bundle ExpiryTrack Status')
                 const mainDataExpiry = bundleExpiryTrack ? utils.formatDate(bundleExpiryTrack.expiry_date) : null
 
@@ -253,9 +251,9 @@ router.get("/account", passport.authenticate('basic', {
                             expiry_date
                         })
                         zero_data_unlimited.push({
-                            balanceType:'AlwaysON Lite Data',
-                            value:0,
-                            expiry_date:null,
+                            balanceType: 'AlwaysON Lite Data',
+                            value: 0,
+                            expiry_date: null,
                         })
 
                     } else if (balanceType === 'UL_AlwaysON_Standard Status' && balanceValue > 0) {
@@ -265,13 +263,12 @@ router.get("/account", passport.authenticate('basic', {
                             expiry_date
                         })
                         zero_data_unlimited.push({
-                            balanceType:'BigXtra Standard Data',
-                            value:0,
-                            expiry_date:null,
+                            balanceType: 'BigXtra Standard Data',
+                            value: 0,
+                            expiry_date: null,
                         })
 
-                    }
-                    else if (balanceType === 'UL_AlwaysON_OneYear Status' && balanceValue > 0) {
+                    } else if (balanceType === 'UL_AlwaysON_OneYear Status' && balanceValue > 0) {
                         unlimitedBalances.push({
                             balance_type: 'Yolo Package',
                             value: 'ACTIVE',
@@ -279,22 +276,21 @@ router.get("/account", passport.authenticate('basic', {
                         })
 
                         zero_data_unlimited.push({
-                            balanceType:'Yolo Data',
-                            value:0,
-                            expiry_date:null,
+                            balanceType: 'Yolo Data',
+                            value: 0,
+                            expiry_date: null,
                         })
 
-                    }
-                    else if (balanceType === 'UL_AlwaysON_Starter Status' && balanceValue > 0) {
+                    } else if (balanceType === 'UL_AlwaysON_Starter Status' && balanceValue > 0) {
                         unlimitedBalances.push({
                             balance_type: 'AlwaysON Starter Package',
                             value: 'ACTIVE',
                             expiry_date
                         })
                         zero_data_unlimited.push({
-                            balanceType:'AlwaysON Starter Data',
-                            value:0,
-                            expiry_date:null,
+                            balanceType: 'AlwaysON Starter Data',
+                            value: 0,
+                            expiry_date: null,
                         })
 
                     } else if (balanceType === 'UL_AlwaysON_Streamer Status' && balanceValue > 0) {
@@ -304,9 +300,9 @@ router.get("/account", passport.authenticate('basic', {
                             expiry_date
                         })
                         zero_data_unlimited.push({
-                            balanceType:'AlwaysON Streamer Data',
-                            value:0,
-                            expiry_date:null,
+                            balanceType: 'AlwaysON Streamer Data',
+                            value: 0,
+                            expiry_date: null,
                         })
 
                     } else if (balanceType === 'UL_AlwaysON_Super Status' && balanceValue > 0) {
@@ -317,9 +313,9 @@ router.get("/account", passport.authenticate('basic', {
                         })
 
                         zero_data_unlimited.push({
-                            balanceType:'BigXtra Super Data',
-                            value:0,
-                            expiry_date:null,
+                            balanceType: 'BigXtra Super Data',
+                            value: 0,
+                            expiry_date: null,
                         })
 
                     } else if (balanceType === 'UL_AlwaysON_Ultra Status' && balanceValue > 0) {
@@ -330,9 +326,9 @@ router.get("/account", passport.authenticate('basic', {
                         })
 
                         zero_data_unlimited.push({
-                            balanceType:'BigXtra Ultra Data',
-                            value:0,
-                            expiry_date:null,
+                            balanceType: 'BigXtra Ultra Data',
+                            value: 0,
+                            expiry_date: null,
                         })
 
                     } else if (balanceType === 'UL_AlwaysON_Maxi Status' && balanceValue > 0) {
@@ -343,9 +339,9 @@ router.get("/account", passport.authenticate('basic', {
                         })
 
                         zero_data_unlimited.push({
-                            balanceType:'AlwaysON Maxi Data',
-                            value:0,
-                            expiry_date:null,
+                            balanceType: 'AlwaysON Maxi Data',
+                            value: 0,
+                            expiry_date: null,
                         })
 
                     } else if (balanceType === 'ULNitePlan Status' && balanceValue > 0) {
@@ -376,14 +372,14 @@ router.get("/account", passport.authenticate('basic', {
                             expiry_date
                         })
 
-                    }else if (balanceType === 'TaxifyUL_Super Status' && balanceValue > 0) {
+                    } else if (balanceType === 'TaxifyUL_Super Status' && balanceValue > 0) {
                         unlimitedBalances.push({
                             balance_type: 'Unlimited Super',
                             value: 'ACTIVE',
                             expiry_date
                         })
 
-                    }else if (balanceType.match(/^Staff.*Count/) && balanceValue > 0) {
+                    } else if (balanceType.match(/^Staff.*Count/) && balanceValue > 0) {
                         unlimitedBalances.push({
                             balance_type: 'Staff Package',
                             value: 'ACTIVE',
@@ -391,9 +387,9 @@ router.get("/account", passport.authenticate('basic', {
                         })
 
                         zero_data_unlimited.push({
-                            balanceType:'Staff Data',
-                            value:0,
-                            expiry_date:null,
+                            balanceType: 'Staff Data',
+                            value: 0,
+                            expiry_date: null,
                         })
 
                     }
@@ -410,9 +406,9 @@ router.get("/account", passport.authenticate('basic', {
 
                 let unlimited_data_temp = all_balances.filter(item => Object.keys(unlimited_data).includes(item.balance_type))
 
-                unlimited_data_temp = unlimited_data_temp.map(item =>{
+                unlimited_data_temp = unlimited_data_temp.map(item => {
                     item.value = item.value ? parseFloat(item.value / 1024).toFixed(3) : 0;
-                    item.expiry_date =  null;
+                    item.expiry_date = null;
                     item.balance_type = unlimited_data[item.balance_type]
                     return item
 
@@ -420,7 +416,7 @@ router.get("/account", passport.authenticate('basic', {
 
                 unlimited_data_temp.sort((a, b) => b.value - a.value)
 
-                let finalUnlimitedData = unlimited_data_temp.length >0 ? unlimited_data_temp[0]: zero_data_unlimited.length>0?zero_data_unlimited[0]:null;
+                let finalUnlimitedData = unlimited_data_temp.length > 0 ? unlimited_data_temp[0] : zero_data_unlimited.length > 0 ? zero_data_unlimited[0] : null;
 
                 const data_balance = [
                     {
@@ -1395,7 +1391,7 @@ router.get("/usage_hist", passport.authenticate('basic', {session: false}), asyn
 
             }
 
-            if (Object.keys(obj).length > 0){
+            if (Object.keys(obj).length > 0) {
 
                 for (const [k, v] of Object.entries(obj)) {
                     finalResult.push({record_date: k, cost: v})
@@ -1425,6 +1421,68 @@ router.get("/usage_hist", passport.authenticate('basic', {session: false}), asyn
             status: 1,
             reason: "System Error"
         })
+    }
+
+
+});
+
+router.post("/free_data", passport.authenticate('basic', {session: false}), async (req, res) => {
+
+    const {error} = validator.validateFreeData(req.body);
+    if (error) {
+        return res.json({
+            status: 2,
+            reason: error.message
+        })
+    }
+    let {subscriberNumber, channel, transactionId, action} = req.body;
+    if (channel.toLowerCase() !== req.user.channel) {
+        return res.json({
+            status: 2,
+            reason: `Invalid Request channel ${channel}`
+        })
+    }
+
+    let reference = "Unset_Free_DATA";
+
+    if (action === 'credit') reference = "Set_Free_DATA"
+
+    const url = "http://172.25.39.13:3004";
+    const sampleHeaders = {
+        'User-Agent': 'NodeApp',
+        'Content-Type': 'text/xml;charset=UTF-8',
+        'SOAPAction': 'urn:CCSCD7_QRY',
+    };
+    let xmlRequest = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:pi="http://xmlns.oracle.com/communications/ncc/2009/05/15/pi">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <pi:CCSCD3_RCH>
+          <pi:username>${process.env.PI_USER}</pi:username>
+          <pi:password>${process.env.PI_PASS}</pi:password>
+          <pi:MSISDN>${subscriberNumber}</pi:MSISDN>
+         <pi:RECHARGE_TYPE>VoucherType</pi:RECHARGE_TYPE>
+         <pi:REFERENCE>${reference}</pi:REFERENCE>
+         <pi:EXTRA_EDR>TRANSACTION_ID=${transactionId}</pi:EXTRA_EDR>
+      </pi:CCSCD3_RCH>
+   </soapenv:Body>
+</soapenv:Envelope>`;
+    try {
+        const {response} = await soapRequest({url: url, headers: sampleHeaders, xml: xmlRequest, timeout: 15000}); // Optional timeout parameter(milliseconds)
+        const {body} = response;
+        let jsonObj = parser.parse(body, options);
+        if (jsonObj.Envelope.Body.CCSCD3_RCHResponse.AUTH) {
+            return res.json({status: 0, reason: "success"})
+        } else if (jsonObj.Envelope.Body.Fault) {
+            let soapFault = jsonObj.Envelope.Body.Fault;
+            let faultString = soapFault.faultstring;
+            return res.json({status: 1, reason: faultString})
+        } else {
+            return res.json({status: 1, reason: "System Error"})
+        }
+    } catch (ex) {
+        console.log(ex)
+        return res.json({status: 1, reason: "System Error"})
+
     }
 
 

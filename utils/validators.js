@@ -61,7 +61,7 @@ module.exports = {
 
     },
 
-    validateBalanceQuery: (body) =>{
+    validateBalanceQuery: (body) => {
         const schema = Joi.object({
             subscriberNumber: Joi.string()
                 .length(12)
@@ -81,7 +81,7 @@ module.exports = {
         return schema.validate(body)
 
     },
-    validateVoucher: (body) =>{
+    validateVoucher: (body) => {
         const schema = Joi.object({
             subscriberNumber: Joi.string()
                 .length(12)
@@ -110,7 +110,7 @@ module.exports = {
 
     },
 
-    validateDataRecharge: (body) =>{
+    validateDataRecharge: (body) => {
         const schema = Joi.object({
             subscriberNumber: Joi.string()
                 .length(12)
@@ -144,7 +144,7 @@ module.exports = {
         return schema.validate(body)
 
     },
-    validateBalanceQueryEp:(body) => {
+    validateBalanceQueryEp: (body) => {
 
         const schema = Joi.object({
             channel: Joi.string()
@@ -163,7 +163,7 @@ module.exports = {
 
     },
 
-    validateExtraTime: (body) =>{
+    validateExtraTime: (body) => {
         const schema = Joi.object({
             subscriberNumber: Joi.string()
                 .length(12)
@@ -185,7 +185,7 @@ module.exports = {
         return schema.validate(body)
 
     },
-    validateGift: (body) =>{
+    validateGift: (body) => {
         const schema = Joi.object({
 
             donorNumber: Joi.string()
@@ -217,7 +217,7 @@ module.exports = {
         return schema.validate(body)
 
     },
-    validateGetNumber: (body) =>{
+    validateGetNumber: (body) => {
         const schema = Joi.object({
             channel: Joi.string()
                 .alphanum()
@@ -228,14 +228,14 @@ module.exports = {
                 .regex(/[\d+]{18,19}/)
                 .label("Sim serial number or ICCID")
                 .required()
-                // .message("IccId is invalid format. Please check the back of sim card for the serial number")
+            // .message("IccId is invalid format. Please check the back of sim card for the serial number")
 
         });
 
         return schema.validate(body)
 
     },
-    validateCashCredit: (body) =>{
+    validateCashCredit: (body) => {
         const schema = Joi.object({
 
             subscriberNumber: Joi.string()
@@ -257,10 +257,28 @@ module.exports = {
         return schema.validate(body)
 
     },
+    validateFreeData: (body) => {
+        const schema = Joi.object({
 
+            subscriberNumber: Joi.string()
+                .length(12)
+                .alphanum()
+                .regex(/^233.+/)
+                .required()
+                .messages({"string.pattern.base": "subscriberNumber must start with 233"}),
+            transactionId: Joi.string()
+                .required(),
+            channel: Joi.string()
+                .required(),
+            action: Joi.string()
+                .valid('credit', 'expire')
+                .required(),
 
+        });
 
+        return schema.validate(body)
 
+    },
 
 
 }
