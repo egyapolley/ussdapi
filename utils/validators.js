@@ -64,9 +64,7 @@ module.exports = {
     validateBalanceQuery: (body) => {
         const schema = Joi.object({
             subscriberNumber: Joi.string()
-                .length(12)
                 .alphanum()
-                .regex(/^233.+/)
                 .required()
                 .messages({"string.pattern.base": "subscriberNumber must start with 233"}),
 
