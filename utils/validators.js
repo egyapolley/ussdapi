@@ -61,6 +61,36 @@ module.exports = {
 
     },
 
+    validatePackagePurchasePGW: (body) => {
+
+        const schema = Joi.object({
+            subscriberNumber: Joi.string()
+                .length(12)
+                .alphanum()
+                .regex(/^233.+/)
+                .required()
+                .messages({"string.pattern.base": "subscriberNumber must start with 233"}),
+
+            channel: Joi.string()
+                .equal('MOBILEAPP_MoMo')
+                .required(),
+
+            transactionId: Joi.string()
+                .min(3)
+                .max(300)
+                .required(),
+
+            bundleId: Joi.string()
+                .min(1)
+                .max(10)
+                .required(),
+        });
+
+        return schema.validate(body)
+
+
+    },
+
     validateBalanceQuery: (body) => {
         const schema = Joi.object({
             subscriberNumber: Joi.string()
@@ -73,7 +103,6 @@ module.exports = {
                 .min(3)
                 .max(50)
                 .required(),
-
         });
 
         return schema.validate(body)

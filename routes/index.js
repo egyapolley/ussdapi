@@ -139,6 +139,7 @@ router.get("/account", passport.authenticate('basic', {
                     'Promotional Data',
                     'Bonus Data',
                     'Gift Data',
+                    'FDFL Data',
                     'Ten4Ten',
                     'TestDrive Data',
                     'SanBraFie Data',
@@ -905,6 +906,101 @@ router.post("/bundles_ca", passport.authenticate('basic', {
     }
 
 })*/
+router.post("/bundles_pgw", passport.authenticate('basic', {
+    session: false
+}), async (req, res) => {
+
+    const {error} = validator.validatePackagePurchasePGW(req.body);
+    if (error) {
+        return res.json({
+            status: 2,
+            reason: error.message
+        })
+    }
+    const {subscriberNumber, channel, transactionId, bundleId} = req.body;
+
+
+    const url = "http://172.25.39.16:2222";
+    const sampleHeaders = {
+        'User-Agent': 'NodeApp',
+        'Content-Type': 'text/xml;charset=UTF-8',
+        'SOAPAction': 'http://SCLINSMSVM01P/wsdls/Surfline/VoucherRecharge_USSD/VoucherRecharge_USSD',
+        'Authorization': `${process.env.OSD_AUTH}`
+    };
+
+
+    let xmlRequest = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:dat="http://SCLINSMSVM01P/wsdls/Surfline/DATARechargeUSSDMobileMoney.wsdl">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <dat:DATARechargeUSSDMoMoRequest>
+         <CC_Calling_Party_Id>${process.env.PGW_ACCTID}</CC_Calling_Party_Id>
+         <CHANNEL>${channel}</CHANNEL>
+         <TRANSACTION_ID>${transactionId}</TRANSACTION_ID>
+         <Recipient_Number>${subscriberNumber}</Recipient_Number>
+         <BundleName>${bundleId}</BundleName>
+         <SubscriptionType>One-Off</SubscriptionType>
+      </dat:DATARechargeUSSDMoMoRequest>
+   </soapenv:Body>
+</soapenv:Envelope>`;
+    try {
+        const {response} = await soapRequest({url: url, headers: sampleHeaders, xml: xmlRequest, timeout: 5000}); // Optional timeout parameter(milliseconds)
+
+        const {body} = response;
+
+        let jsonObj = parser.parse(body, options);
+        let result = jsonObj.Envelope.Body;
+        if (result.DATARechargeUSSDMoMoResult && result.DATARechargeUSSDMoMoResult.ServiceRequestID) {
+            let serviceRequestID = result.DATARechargeUSSDMoMoResult.ServiceRequestID;
+            res.json({
+                status: 0,
+                reason: "success",
+                serviceRequestId: serviceRequestID,
+                clientTransactionId: transactionId,
+            })
+
+        }
+
+    } catch (err) {
+        let errorBody = err.toString();
+        if (parser.validate(errorBody) === true) {
+            let jsonObj = parser.parse(errorBody, options);
+            if (jsonObj.Envelope.Body.Fault) {
+                let soapFault = jsonObj.Envelope.Body.Fault;
+                let faultString = soapFault.faultstring;
+                console.log(faultString);
+                let errorcode = soapFault.detail.DATARechargeUSSDMoMoFault.errorCode;
+                console.log(errorcode)
+                switch (errorcode) {
+                    case 62:
+                        faultString = "Invalid Request Parameter values";
+                        break;
+                    case 61:
+                        faultString = "subscriberNumber not valid";
+                        break;
+
+                    default:
+                        faultString = "System Error";
+
+                }
+                return res.json(
+                    {
+                        status: 1,
+                        reason: faultString,
+                        serviceRequestId: null,
+                        clientTransactionId: transactionId
+                    })
+
+            }
+
+
+        }
+
+        console.log(errorBody)
+        res.json({error: "System Failure"})
+
+    }
+
+})
 
 router.post("/redeem_extra", passport.authenticate('basic', {
     session: false
@@ -1471,6 +1567,12 @@ router.post("/free_data", passport.authenticate('basic', {session: false}), asyn
         const {body} = response;
         let jsonObj = parser.parse(body, options);
         if (jsonObj.Envelope.Body.CCSCD3_RCHResponse.AUTH) {
+            try {
+                await notifyPCRF(subscriberNumber)
+            } catch (e) {
+                console.log(e)
+            }
+
             return res.json({status: 0, reason: "success"})
         } else if (jsonObj.Envelope.Body.Fault) {
             let soapFault = jsonObj.Envelope.Body.Fault;
@@ -1514,6 +1616,29 @@ module.exports = router;
 function getReqData(req) {
     if (Object.keys(req.query).length > 0) return req.query
     else return req.body
+}
+
+
+async function notifyPCRF(msisdn) {
+
+    const url = "http://172.25.39.16:2222";
+    const sampleHeaders = {
+        'User-Agent': 'NodeApp',
+        'Content-Type': 'text/xml;charset=UTF-8',
+        'SOAPAction': 'http://SCLINSMSVM01P/wsdls/Surfline/VoucherRecharge_USSD/VoucherRecharge_USSD',
+        'Authorization': `${process.env.OSD_AUTH}`
+    };
+
+    const XML = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:pcrf="http://SCLINSMSVM01P/wsdls/Surfline/PCRF_DayNight_Notify.wsdl">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <pcrf:PCRF_DayNight_NotifyRequest>
+         <CC_Calling_Party_Id>${msisdn}</CC_Calling_Party_Id>
+      </pcrf:PCRF_DayNight_NotifyRequest>
+   </soapenv:Body>
+</soapenv:Envelope>`;
+    await soapRequest({url: url, headers: sampleHeaders, xml: XML, timeout: 5000});
+
 }
 
 
