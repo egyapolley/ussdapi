@@ -1349,17 +1349,32 @@ router.post("/cash", passport.authenticate('basic', {session: false}), async (re
         })
     }
 
+    if (channel === 'MOBILEAPP') {
+        const params = {subscriberNumber, transactionId, amount, channel}
+        const debitResult = await debitCASH_Epart(params)
+        if (debitResult.status) {
+            const creditResult = await creditCASH_Sub(params)
+            if (creditResult.status) {
+                return res.json({status: 0, reason: "success"})
+            } else {
+                await reverseCASH_Epart(params)
+                return res.json({status: 1, reason: creditResult.reason})
+            }
+        } else {
+            return res.json({status: 1, reason: debitResult.reason})
+        }
 
-    try {
-        const url = "http://172.25.39.16:2222";
-        const sampleHeaders = {
-            'User-Agent': 'NodeApp',
-            'Content-Type': 'text/xml;charset=UTF-8',
-            'SOAPAction': 'http://SCLINSMSVM01P/wsdls/Surfline/VoucherRecharge_USSD/VoucherRecharge_USSD',
-            'Authorization': `${process.env.OSD_AUTH}`
-        };
+    } else {
+        try {
+            const url = "http://172.25.39.16:2222";
+            const sampleHeaders = {
+                'User-Agent': 'NodeApp',
+                'Content-Type': 'text/xml;charset=UTF-8',
+                'SOAPAction': 'http://SCLINSMSVM01P/wsdls/Surfline/VoucherRecharge_USSD/VoucherRecharge_USSD',
+                'Authorization': `${process.env.OSD_AUTH}`
+            };
 
-        const XML = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:cus="http://172.25.39.13/wsdls/Surfline/CustomRecharge.wsdl">
+            const XML = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:cus="http://172.25.39.13/wsdls/Surfline/CustomRecharge.wsdl">
        <soapenv:Header/>
        <soapenv:Body>
           <cus:CustomRechargeRequest>
@@ -1381,39 +1396,43 @@ router.post("/cash", passport.authenticate('basic', {session: false}), async (re
           </cus:CustomRechargeRequest>
        </soapenv:Body>
     </soapenv:Envelope>`;
-        const {response} = await soapRequest({url: url, headers: sampleHeaders, xml: XML, timeout: 10000});
-        const {body} = response;
-        let jsonObj = parser.parse(body, options);
-        const soapResponseBody = jsonObj.Envelope.Body;
-        if (!soapResponseBody.CustomRechargeResult) {
-            res.json({status: 0, reason: "success"})
-        } else {
-            res.json({status: 1, reason: "System Error"})
-        }
-    } catch (err) {
-        let errorBody = err.toString();
-        if (parser.validate(errorBody) === true) {
-            let jsonObj = parser.parse(errorBody, options);
-            if (jsonObj.Envelope.Body.Fault) {
-                let soapFault = jsonObj.Envelope.Body.Fault;
-                let faultString = soapFault.faultstring;
-                console.log(faultString);
-                let errorcode = soapFault.detail.CustomRechargeFault.errorCode;
-                switch (errorcode) {
-                    case 60:
-                        faultString = `Subscriber number ${subscriberNumber} is INVALID`;
-                        break;
-                    default:
-                        faultString = "System Error";
+            const {response} = await soapRequest({url: url, headers: sampleHeaders, xml: XML, timeout: 10000});
+            const {body} = response;
+            let jsonObj = parser.parse(body, options);
+            const soapResponseBody = jsonObj.Envelope.Body;
+            if (!soapResponseBody.CustomRechargeResult) {
+                res.json({status: 0, reason: "success"})
+            } else {
+                res.json({status: 1, reason: "System Error"})
+            }
+        } catch (err) {
+            let errorBody = err.toString();
+            if (parser.validate(errorBody) === true) {
+                let jsonObj = parser.parse(errorBody, options);
+                if (jsonObj.Envelope.Body.Fault) {
+                    let soapFault = jsonObj.Envelope.Body.Fault;
+                    let faultString = soapFault.faultstring;
+                    console.log(faultString);
+                    let errorcode = soapFault.detail.CustomRechargeFault.errorCode;
+                    switch (errorcode) {
+                        case 60:
+                            faultString = `Subscriber number ${subscriberNumber} is INVALID`;
+                            break;
+                        default:
+                            faultString = "System Error";
+                    }
+                    return res.json({status: 1, reason: faultString})
                 }
-                return res.json({status: 1, reason: faultString})
+
             }
 
+            console.log(errorBody)
+            res.json({error: "System Failure"})
         }
 
-        console.log(errorBody)
-        res.json({error: "System Failure"})
     }
+
+
 })
 
 router.get("/usage_hist", passport.authenticate('basic', {session: false}), async (req, res) => {
@@ -1640,5 +1659,150 @@ async function notifyPCRF(msisdn) {
     await soapRequest({url: url, headers: sampleHeaders, xml: XML, timeout: 5000});
 
 }
+
+
+async function creditCASH_Sub({subscriberNumber, amount, transactionId, channel}) {
+
+    const url = "http://172.25.39.13:3003";
+    const sampleHeaders = {
+        'User-Agent': 'NodeApp',
+        'Content-Type': 'text/xml;charset=UTF-8',
+        'SOAPAction': 'urn:CCSCD1_QRY',
+    };
+
+    let xmlRequest = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:pi="http://xmlns.oracle.com/communications/ncc/2009/05/15/pi">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <pi:CCSCD3_RCH>
+         <pi:username>${process.env.PI_USER}</pi:username>
+         <pi:password>${process.env.PI_PASS}</pi:password>
+         <pi:RECHARGE_TYPE>Custom</pi:RECHARGE_TYPE>
+         <pi:REFERENCE>Load Cash - MobileApp</pi:REFERENCE>
+         <pi:MSISDN>${subscriberNumber}</pi:MSISDN>
+         <pi:AMOUNT>${amount}</pi:AMOUNT>
+         <pi:MODE>3</pi:MODE>
+         <pi:BALANCE_TYPE>General Cash</pi:BALANCE_TYPE>
+         <pi:EXTRA_EDR>TRANSACTION_ID=${transactionId}|CHANNEL=${channel}</pi:EXTRA_EDR>
+      </pi:CCSCD3_RCH>
+   </soapenv:Body>
+</soapenv:Envelope>`;
+
+    try {
+        const {response} = await soapRequest({url: url, headers: sampleHeaders, xml: xmlRequest, timeout: 15000}); // Optional timeout parameter(milliseconds)
+        const {body} = response;
+        let jsonObj = parser.parse(body, options);
+        if (jsonObj.Envelope.Body.CCSCD3_RCHResponse.AUTH) {
+            return {status: true, reason: "success"}
+        } else if (jsonObj.Envelope.Body.Fault) {
+            let soapFault = jsonObj.Envelope.Body.Fault;
+            let faultString = soapFault.faultstring;
+            return {status: false, reason: faultString}
+        } else {
+            return {status: false, reason: "System Error"}
+        }
+    } catch (ex) {
+        console.log(ex)
+        return {status: false, reason: "System Error"}
+
+    }
+
+
+}
+
+async function debitCASH_Epart({subscriberNumber, amount, transactionId, channel}) {
+
+    const url = "http://172.25.39.13:3003";
+    const sampleHeaders = {
+        'User-Agent': 'NodeApp',
+        'Content-Type': 'text/xml;charset=UTF-8',
+        'SOAPAction': 'urn:CCSCD1_QRY',
+    };
+
+    let xmlRequest = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:pi="http://xmlns.oracle.com/communications/ncc/2009/05/15/pi">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <pi:CCSCD1_CHG>
+         <pi:username>${process.env.PI_USER}</pi:username>
+         <pi:password>${process.env.PI_PASS}</pi:password>
+         <pi:MSISDN>524523312667</pi:MSISDN>
+         <pi:BALANCE_TYPE>General Cash</pi:BALANCE_TYPE>
+         <pi:BALANCE>${amount}</pi:BALANCE>
+         <pi:EXTRA_EDR>TRANSACTION_ID=${transactionId}|CHANNEL=${channel}|RECIPIENT_MSISDN=${subscriberNumber}|REFERENCE=Load Cash - Mobile</pi:EXTRA_EDR>
+         <pi:WALLET_TYPE>Primary</pi:WALLET_TYPE>
+      </pi:CCSCD1_CHG>
+   </soapenv:Body>
+</soapenv:Envelope>`;
+
+    try {
+        const {response} = await soapRequest({url: url, headers: sampleHeaders, xml: xmlRequest, timeout: 15000}); // Optional timeout parameter(milliseconds)
+        const {body} = response;
+        let jsonObj = parser.parse(body, options);
+        if (jsonObj.Envelope.Body.CCSCD1_CHGResponse.AUTH) {
+            return {status: true, reason: "success"}
+        } else if (jsonObj.Envelope.Body.Fault) {
+            let soapFault = jsonObj.Envelope.Body.Fault;
+            let faultString = soapFault.faultstring;
+            return {status: false, reason: faultString}
+        } else {
+            return {status: false, reason: "System Error"}
+        }
+    } catch (ex) {
+        console.log(ex)
+        return {status: false, reason: "System Error"}
+
+    }
+
+
+}
+
+async function reverseCASH_Epart({subscriberNumber, amount, transactionId, channel}) {
+
+    const url = "http://172.25.39.13:3003";
+    const sampleHeaders = {
+        'User-Agent': 'NodeApp',
+        'Content-Type': 'text/xml;charset=UTF-8',
+        'SOAPAction': 'urn:CCSCD1_QRY',
+    };
+
+    let xmlRequest = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:pi="http://xmlns.oracle.com/communications/ncc/2009/05/15/pi">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <pi:CCSCD1_CHG>
+         <pi:username>${process.env.PI_USER}</pi:username>
+         <pi:password>${process.env.PI_PASS}</pi:password>
+         <pi:MSISDN>524523312667</pi:MSISDN>
+         <pi:BALANCE_TYPE>General Cash</pi:BALANCE_TYPE>
+         <pi:BALANCE>-${amount}</pi:BALANCE>
+         <pi:EXTRA_EDR>TRANSACTION_ID=${transactionId}|CHANNEL=${channel}|RECIPIENT_MSISDN=${subscriberNumber}|REFERENCE=Reverse Cash - MobileAPP</pi:EXTRA_EDR>
+         <pi:WALLET_TYPE>Primary</pi:WALLET_TYPE>
+      </pi:CCSCD1_CHG>
+   </soapenv:Body>
+</soapenv:Envelope>`;
+
+    try {
+        const {response} = await soapRequest({url: url, headers: sampleHeaders, xml: xmlRequest, timeout: 15000}); // Optional timeout parameter(milliseconds)
+        const {body} = response;
+        let jsonObj = parser.parse(body, options);
+        if (jsonObj.Envelope.Body.CCSCD1_CHGResponse.AUTH) {
+            return {status: true, reason: "success"}
+        } else if (jsonObj.Envelope.Body.Fault) {
+            let soapFault = jsonObj.Envelope.Body.Fault;
+            let faultString = soapFault.faultstring;
+            return {status: false, reason: faultString}
+        } else {
+            return {status: false, reason: "System Error"}
+        }
+    } catch (ex) {
+        console.log(ex)
+        return {status: false, reason: "System Error"}
+
+    }
+
+
+}
+
+
+
+
 
 
