@@ -101,7 +101,7 @@ router.get("/account", passport.authenticate('basic', {
    </soapenv:Body>
 </soapenv:Envelope>`;
 
-        const {response} = await soapRequest({url: url, headers: sampleHeaders, xml: getBalancexml, timeout: 3000}); // Optional timeout parameter(milliseconds)
+        const {response} = await soapRequest({url: url, headers: sampleHeaders, xml: getBalancexml, timeout: 10000}); // Optional timeout parameter(milliseconds)
 
         const {body} = response;
 
@@ -1691,7 +1691,8 @@ async function creditCASH_Sub({subscriberNumber, amount, transactionId, channel}
         const {response} = await soapRequest({url: url, headers: sampleHeaders, xml: xmlRequest, timeout: 15000}); // Optional timeout parameter(milliseconds)
         const {body} = response;
         let jsonObj = parser.parse(body, options);
-        if (jsonObj.Envelope.Body.CCSCD3_RCHResponse.AUTH) {
+        console.log(JSON.stringify(jsonObj.Envelope.Body))
+        if (jsonObj.Envelope.Body.CCSCD3_RCHResponse && jsonObj.Envelope.Body.CCSCD3_RCHResponse.AUTH) {
             return {status: true, reason: "success"}
         } else if (jsonObj.Envelope.Body.Fault) {
             let soapFault = jsonObj.Envelope.Body.Fault;
@@ -1727,7 +1728,7 @@ async function debitCASH_Epart({subscriberNumber, amount, transactionId, channel
          <pi:MSISDN>524523312667</pi:MSISDN>
          <pi:BALANCE_TYPE>General Cash</pi:BALANCE_TYPE>
          <pi:BALANCE>${amount}</pi:BALANCE>
-         <pi:EXTRA_EDR>TRANSACTION_ID=${transactionId}|CHANNEL=${channel}|RECIPIENT_MSISDN=${subscriberNumber}|REFERENCE=Load Cash - Mobile</pi:EXTRA_EDR>
+         <pi:EXTRA_EDR>TRANSACTION_ID=${transactionId}|CHANNEL=${channel}|RECIPIENT_MSISDN=${subscriberNumber}</pi:EXTRA_EDR>
          <pi:WALLET_TYPE>Primary</pi:WALLET_TYPE>
       </pi:CCSCD1_CHG>
    </soapenv:Body>
@@ -1737,7 +1738,8 @@ async function debitCASH_Epart({subscriberNumber, amount, transactionId, channel
         const {response} = await soapRequest({url: url, headers: sampleHeaders, xml: xmlRequest, timeout: 15000}); // Optional timeout parameter(milliseconds)
         const {body} = response;
         let jsonObj = parser.parse(body, options);
-        if (jsonObj.Envelope.Body.CCSCD1_CHGResponse.AUTH) {
+        console.log(JSON.stringify(jsonObj.Envelope.Body))
+        if (jsonObj.Envelope.Body.CCSCD1_CHGResponse && jsonObj.Envelope.Body.CCSCD1_CHGResponse.AUTH) {
             return {status: true, reason: "success"}
         } else if (jsonObj.Envelope.Body.Fault) {
             let soapFault = jsonObj.Envelope.Body.Fault;
@@ -1773,7 +1775,7 @@ async function reverseCASH_Epart({subscriberNumber, amount, transactionId, chann
          <pi:MSISDN>524523312667</pi:MSISDN>
          <pi:BALANCE_TYPE>General Cash</pi:BALANCE_TYPE>
          <pi:BALANCE>-${amount}</pi:BALANCE>
-         <pi:EXTRA_EDR>TRANSACTION_ID=${transactionId}|CHANNEL=${channel}|RECIPIENT_MSISDN=${subscriberNumber}|REFERENCE=Reverse Cash - MobileAPP</pi:EXTRA_EDR>
+         <pi:EXTRA_EDR>TRANSACTION_ID=${transactionId}|CHANNEL=${channel}|RECIPIENT_MSISDN=${subscriberNumber}</pi:EXTRA_EDR>
          <pi:WALLET_TYPE>Primary</pi:WALLET_TYPE>
       </pi:CCSCD1_CHG>
    </soapenv:Body>
@@ -1783,7 +1785,8 @@ async function reverseCASH_Epart({subscriberNumber, amount, transactionId, chann
         const {response} = await soapRequest({url: url, headers: sampleHeaders, xml: xmlRequest, timeout: 15000}); // Optional timeout parameter(milliseconds)
         const {body} = response;
         let jsonObj = parser.parse(body, options);
-        if (jsonObj.Envelope.Body.CCSCD1_CHGResponse.AUTH) {
+        console.log(JSON.stringify(jsonObj.Envelope.Body))
+        if (jsonObj.Envelope.Body.CCSCD1_CHGResponse && jsonObj.Envelope.Body.CCSCD1_CHGResponse.AUTH) {
             return {status: true, reason: "success"}
         } else if (jsonObj.Envelope.Body.Fault) {
             let soapFault = jsonObj.Envelope.Body.Fault;
